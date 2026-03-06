@@ -2115,10 +2115,10 @@ MonoBehaviour:
   rockPrefab: {fileID: 6802935025293368480, guid: 32d3cc906c1a67c4495762b8464554db, type: 3}
   grassPrefab: {fileID: 1756457037529692862, guid: 075ff0038b1c0194c8d8c9251b1ec2ec, type: 3}
   bushPrefab: {fileID: 7925791472891497727, guid: e155fe4a4f1ebc048aece7d304b00bcf, type: 3}
-  treeCount: 60
-  rockCount: 25
-  grassCount: 80
-  bushCount: 20
+  treeCount: 150
+  rockCount: 100
+  grassCount: 500
+  bushCount: 300
   treeMinScale: 0.8
   treeMaxScale: 1.5
   rockMinScale: 0.5
