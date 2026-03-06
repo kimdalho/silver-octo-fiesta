@@ -10,15 +10,25 @@ public class PlayerMoveCC : MonoBehaviour
     private CharacterController cc;
     private Vector3 velocity; // y축 중력 누적
 
+    private static PlayerMoveCC instance;
+
     void Awake()
     {
+        if (instance != null && instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        instance = this;
+        DontDestroyOnLoad(gameObject);
         cc = GetComponent<CharacterController>();
         if (!cameraTransform) cameraTransform = Camera.main.transform;
     }
 
     void Update()
     {
-        // 입력
+        if (!cc.enabled) return;
+
         float h = Input.GetAxisRaw("Horizontal");
         float v = Input.GetAxisRaw("Vertical");
 

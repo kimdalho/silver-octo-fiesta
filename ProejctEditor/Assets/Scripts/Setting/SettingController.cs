@@ -6,9 +6,9 @@ public class SettingController : MonoBehaviour
     [SerializeField] private Camera targetCamera;
 
     [Header("Isometric Camera Preset")]
-    [SerializeField] private Vector3 rotationEuler = new Vector3(35f, 45f, 0f);
+    [SerializeField] private Vector3 rotationEuler = new Vector3(50f, 45f, 0f);
     [SerializeField] private bool useOrthographic = true;
-    [SerializeField] private float orthoSize = 10f;
+    [SerializeField] private float orthoSize = 8f;
 
     [Header("Apply Options")]
     [SerializeField] private bool applyOnAwake = true;   // 게임 시작 시 자동 적용

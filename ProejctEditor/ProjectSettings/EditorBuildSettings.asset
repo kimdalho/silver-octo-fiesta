@@ -8,6 +8,15 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/ScneeMain.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/1.LocalScene.unity
+    guid: 8108c4b1439903145936064e7a4a0a5c
+  - enabled: 1
+    path: Assets/Scenes/2.BattleScene.unity
+    guid: 79e75b2e8ea31ed4eaa122a3d6e32dea
+  - enabled: 1
+    path: Assets/Scenes/3.Load.unity
+    guid: 0281fca82f7c6654baaa51d99b198281
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
