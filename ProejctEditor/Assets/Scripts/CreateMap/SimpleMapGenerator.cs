@@ -24,6 +24,10 @@ public class SimpleMapGenerator : MonoBehaviour
     public float rockMinScale = 0.5f;
     public float rockMaxScale = 1.3f;
 
+    [Header("Dropped Items")]
+    public ItemData[] spawnableItems;
+    public int itemSpawnCount = 10;
+
     private GameObject mapRoot;
 
     public void Generate()
@@ -35,6 +39,7 @@ public class SimpleMapGenerator : MonoBehaviour
         SpawnGroup("Rocks", rockPrefab, rockCount, 2f, rockMinScale, rockMaxScale);
         SpawnGroup("Grass", grassPrefab, grassCount, 0.5f, 0.7f, 1.2f);
         SpawnGroup("Bushes", bushPrefab, bushCount, 2f, 0.7f, 1.3f);
+        SpawnDroppedItems();
     }
 
     public void Clear()
@@ -113,6 +118,22 @@ public class SimpleMapGenerator : MonoBehaviour
         sr.sprite = Sprite.Create(tex, new Rect(0, 0, 2, 2), new Vector2(0.5f, 0f), 2);
 
         return go;
+    }
+
+    void SpawnDroppedItems()
+    {
+        if (spawnableItems == null || spawnableItems.Length == 0) return;
+
+        var parent = new GameObject("DroppedItems").transform;
+        parent.SetParent(mapRoot.transform);
+
+        for (int i = 0; i < itemSpawnCount; i++)
+        {
+            Vector2 pos = RandomInCircle(mapRadius * 0.8f, 3f);
+            var data = spawnableItems[Random.Range(0, spawnableItems.Length)];
+            var worldItem = WorldItem.Spawn(data, new Vector3(pos.x, 0f, pos.y));
+            worldItem.transform.SetParent(parent);
+        }
     }
 
     Vector2 RandomInCircle(float radius, float minDistFromCenter)
