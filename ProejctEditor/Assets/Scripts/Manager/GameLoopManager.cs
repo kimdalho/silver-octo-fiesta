@@ -63,6 +63,15 @@ public class GameLoopManager : MonoBehaviour
 
         GenerateMap();
         SpawnPlayer(Vector3.zero);
+
+        // 씬별 카메라 모드 전환
+        if (CameraFollow.instance != null)
+        {
+            if (scene.name == "2.BattleScene")
+                CameraFollow.instance.SetMode(CameraMode.ShoulderView);
+            else
+                CameraFollow.instance.SetMode(CameraMode.TopView);
+        }
     }
 
     public void ChangeStep(GameStep step)

@@ -85,4 +85,13 @@ public class InventoryManager : MonoBehaviour
 
         return true;
     }
+
+    /// <summary>
+    /// 사망 시 인벤토리 + 장비 전부 삭제.
+    /// </summary>
+    public void OnPlayerDeath()
+    {
+        inventory.ClearAll();
+        equipment.ClearAll();
+    }
 }

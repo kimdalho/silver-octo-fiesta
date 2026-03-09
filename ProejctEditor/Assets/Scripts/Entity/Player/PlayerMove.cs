@@ -5,6 +5,7 @@ public class PlayerMoveCC : MonoBehaviour
 {
     public float moveSpeed = 5f;
     public float gravity = -20f;
+    public float turnSpeed = 10f;
     public Transform cameraTransform;
 
     private CharacterController cc;
@@ -42,6 +43,15 @@ public class PlayerMoveCC : MonoBehaviour
 
         Vector3 moveDir = (forward * v + right * h);
         if (moveDir.sqrMagnitude > 1f) moveDir.Normalize();
+
+        // ShoulderView: 이동 방향으로 캐릭터 회전
+        if (CameraFollow.instance != null
+            && CameraFollow.instance.mode == CameraMode.ShoulderView
+            && moveDir.sqrMagnitude > 0.01f)
+        {
+            Quaternion targetRot = Quaternion.LookRotation(moveDir);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, turnSpeed * Time.deltaTime);
+        }
 
         // 수평 이동
         cc.Move(moveDir * moveSpeed * Time.deltaTime);

@@ -37,6 +37,15 @@ public class Equipment
         return removed;
     }
 
+    public void ClearAll()
+    {
+        for (int i = 0; i < SlotCount; i++)
+        {
+            slots[i] = null;
+            OnEquipChanged?.Invoke((EquipSlot)i);
+        }
+    }
+
     public StatModifier[] GetAllModifiers()
     {
         var list = new System.Collections.Generic.List<StatModifier>();

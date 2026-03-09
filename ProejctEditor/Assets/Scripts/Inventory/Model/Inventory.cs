@@ -50,6 +50,15 @@ public class Inventory
         OnSlotChanged?.Invoke(index);
     }
 
+    public void ClearAll()
+    {
+        for (int i = 0; i < Size; i++)
+        {
+            slots[i] = null;
+            OnSlotChanged?.Invoke(i);
+        }
+    }
+
     public void SwapSlots(int a, int b)
     {
         (slots[a], slots[b]) = (slots[b], slots[a]);
