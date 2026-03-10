@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 2514984438927563830}
   - component: {fileID: 6820023732859694497}
   - component: {fileID: 7926336527770396873}
-  - component: {fileID: 7032700444983585468}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -87,27 +86,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &7032700444983585468
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4887969952444924717}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &5079758663629486590
 GameObject:
   m_ObjectHideFlags: 0
@@ -118,6 +96,8 @@ GameObject:
   m_Component:
   - component: {fileID: 7658808964066054406}
   - component: {fileID: 1050198830273582199}
+  - component: {fileID: 7301746157268135945}
+  - component: {fileID: 2110887615426870588}
   m_Layer: 0
   m_Name: Tree
   m_TagString: Untagged
@@ -165,6 +145,36 @@ CapsuleCollider:
   m_Height: 2.5
   m_Direction: 1
   m_Center: {x: 0, y: 1.25, z: 0}
+--- !u!114 &7301746157268135945
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5079758663629486590}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e00fbba0c7e508748ab6d70ae8724187, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  drops:
+  - item: {fileID: 11400000, guid: 86f7589e4560ec246a61351d5779c6cb, type: 2}
+    count: 1
+    chance: 1
+--- !u!114 &2110887615426870588
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5079758663629486590}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90dee973d12521347bae019635666513, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHP: 50
+  currentHP: 0
 --- !u!1 &6537626383540031120
 GameObject:
   m_ObjectHideFlags: 0

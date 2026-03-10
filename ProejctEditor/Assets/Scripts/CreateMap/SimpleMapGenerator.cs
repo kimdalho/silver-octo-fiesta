@@ -6,6 +6,9 @@ public class SimpleMapGenerator : MonoBehaviour
     public float mapRadius = 40f;
     public Color groundColor = new Color(0.36f, 0.25f, 0.13f);
 
+    [Header("Block Grid (Local Map)")]
+    public BlockData defaultBlock;
+
     [Header("Prefabs (auto-assigned by Tools > Create Nature Prefabs)")]
     public GameObject treePrefab;
     public GameObject rockPrefab;
@@ -30,9 +33,17 @@ public class SimpleMapGenerator : MonoBehaviour
 
     private GameObject mapRoot;
 
+    private bool useBlockGrid;
+
     public void Generate()
     {
         Clear();
+
+        // GameLoopManager의 현재 스텝으로 판단
+        useBlockGrid = GameLoopManager.instance != null
+            && GameLoopManager.instance.CurrentStep == GameStep.Local
+            && defaultBlock != null;
+
         mapRoot = new GameObject("MapRoot");
         CreateGround();
         SpawnGroup("Trees", treePrefab, treeCount, 3f, treeMinScale, treeMaxScale);
@@ -50,20 +61,35 @@ public class SimpleMapGenerator : MonoBehaviour
 
     void CreateGround()
     {
-        var ground = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        ground.name = "Ground";
-        ground.transform.SetParent(mapRoot.transform);
-        ground.transform.position = Vector3.zero;
-        ground.transform.localScale = new Vector3(mapRadius * 2f, 0.1f, mapRadius * 2f);
+        if (useBlockGrid)
+        {
+            // 로컬맵: 블록 그리드 바닥
+            var groundObj = new GameObject("BlockGround");
+            groundObj.transform.SetParent(mapRoot.transform);
+            groundObj.transform.position = Vector3.zero;
 
-        Destroy(ground.GetComponent<Collider>());
-        var box = ground.AddComponent<BoxCollider>();
-        box.center = Vector3.zero;
-        box.size = Vector3.one;
+            var grid = groundObj.AddComponent<BlockGrid>();
+            grid.defaultBlock = defaultBlock;
+            grid.Initialize();
+        }
+        else
+        {
+            // 배틀맵: 기존 실린더 바닥
+            var ground = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            ground.name = "Ground";
+            ground.transform.SetParent(mapRoot.transform);
+            ground.transform.position = Vector3.zero;
+            ground.transform.localScale = new Vector3(mapRadius * 2f, 0.1f, mapRadius * 2f);
 
-        var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-        mat.color = groundColor;
-        ground.GetComponent<Renderer>().material = mat;
+            Destroy(ground.GetComponent<Collider>());
+            var box = ground.AddComponent<BoxCollider>();
+            box.center = Vector3.zero;
+            box.size = Vector3.one;
+
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            mat.color = groundColor;
+            ground.GetComponent<Renderer>().material = mat;
+        }
     }
 
     void SpawnGroup(string groupName, GameObject prefab, int count, float minDist, float minScale, float maxScale)

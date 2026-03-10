@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Consumable_Berry
   m_EditorClassIdentifier: 
   itemName: "\uB538\uAE30"
-  icon: {fileID: 0}
+  icon: {fileID: -482009782, guid: 91d41414b8722db4eb85d925ab53c7e4, type: 3}
   itemType: 0
   description: "\uB2EC\uCF64\uD55C \uC57C\uC0DD \uB538\uAE30. \uBC30\uACE0\uD514\uC744
     \uB2EC\uB798\uC900\uB2E4."

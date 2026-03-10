@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Material_Twig
   m_EditorClassIdentifier: 
   itemName: "\uB098\uBB47\uAC00\uC9C0"
-  icon: {fileID: 0}
+  icon: {fileID: 2003485759, guid: 91d41414b8722db4eb85d925ab53c7e4, type: 3}
   itemType: 2
   description: "\uC794\uAC00\uC9C0. \uBB34\uC5B8\uAC00\uB97C \uB9CC\uB4E4 \uC218
     \uC788\uC744 \uAC83 \uAC19\uB2E4."

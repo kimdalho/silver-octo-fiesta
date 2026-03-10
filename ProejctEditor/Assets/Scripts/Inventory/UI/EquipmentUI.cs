@@ -37,6 +37,7 @@ public class EquipmentUI : MonoBehaviour
 
         InventoryManager.instance.equipment.OnEquipChanged += RefreshSlot;
         initialized = true;
+        RefreshAll();
     }
 
     void OnDestroy()

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Head_GrassHat
   m_EditorClassIdentifier: 
   itemName: "\uD480 \uBAA8\uC790"
-  icon: {fileID: 0}
+  icon: {fileID: 640866817, guid: 91d41414b8722db4eb85d925ab53c7e4, type: 3}
   itemType: 1
   description: "\uD480\uC744 \uC5EE\uC5B4 \uB9CC\uB4E0 \uBAA8\uC790. \uBA38\uB9AC\uAC00
     \uC2DC\uC6D0\uD558\uB2E4."

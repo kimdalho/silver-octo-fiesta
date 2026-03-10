@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Body_WoodArmor
   m_EditorClassIdentifier: 
   itemName: "\uB098\uBB34 \uAC11\uC637"
-  icon: {fileID: 0}
+  icon: {fileID: -529758008, guid: 91d41414b8722db4eb85d925ab53c7e4, type: 3}
   itemType: 1
   description: "\uB098\uBB34 \uAECD\uC9C8\uB85C \uB9CC\uB4E0 \uAC11\uC637. \uC6C0\uC9C1\uC784\uC774
     \uC880 \uB454\uD574\uC9C4\uB2E4."

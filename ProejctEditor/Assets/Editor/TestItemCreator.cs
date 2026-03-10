@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEditor;
 
 public class TestItemCreator
@@ -67,7 +67,7 @@ public class TestItemCreator
         var twig = ScriptableObject.CreateInstance<ItemData>();
         twig.itemName = "나뭇가지";
         twig.description = "잔가지. 무언가를 만들 수 있을 것 같다.";
-        twig.itemType = ItemType.Material;
+        twig.itemType = ItemType.MaterialItme;
         twig.maxStack = 40;
         AssetDatabase.CreateAsset(twig, $"{path}/Material_Twig.asset");
 

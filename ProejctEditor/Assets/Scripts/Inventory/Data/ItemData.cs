@@ -1,10 +1,10 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public enum ItemType
 {
     Consumable,
     Equipment,
-    Material
+    MaterialItme
 }
 
 [CreateAssetMenu(fileName = "NewItem", menuName = "Inventory/Item")]

@@ -85,4 +85,17 @@ public class PlayerStats : MonoBehaviour
         if (currentHP > MaxHP)
             currentHP = MaxHP;
     }
+
+    public void TakeDamage(float amount)
+    {
+        float damage = Mathf.Max(amount - Defense, 1f);
+        currentHP -= damage;
+
+        if (currentHP <= 0f)
+        {
+            currentHP = 0f;
+            if (InventoryManager.instance != null)
+                InventoryManager.instance.OnPlayerDeath();
+        }
+    }
 }

@@ -513,6 +513,11 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!1 &48091720 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2361560658221704272, guid: 49042b410479d1b4f9570355ef88d4b8, type: 3}
+  m_PrefabInstance: {fileID: 8689481694139192554}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &202660016 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5835484065622510652, guid: 040f5da7cd8aa474382c983ef8ab6caa, type: 3}
@@ -775,8 +780,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 1715482134}
+  mode: 0
   offset: {x: 0, y: 4.2, z: -6}
   rotateSmooth: 5
+  shoulderOffset: {x: 0.5, y: 1.5, z: -3}
+  mouseSensitivity: 2
+  minPitch: -30
+  maxPitch: 60
+  shoulderSmooth: 12
   zoomSpeed: 2
   minZoom: 5
   maxZoom: 15
@@ -1474,6 +1485,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6155743393064553475, guid: 49042b410479d1b4f9570355ef88d4b8, type: 3}
   m_PrefabInstance: {fileID: 8689481694139192554}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1715482138
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 48091720}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e8d19208f0434548b35ead67e39dd28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackRange: 1
+  attackRadius: 0.73
+  attackCooldown: 0.5
+--- !u!114 &1715482142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 48091720}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24d760212a3fe5a479ffb6b5a17f27cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  placeDistance: 5
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!1 &1752762232
 GameObject:
   m_ObjectHideFlags: 0
@@ -1874,16 +1916,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 482a0b85f8cdc9f4fa1f4bc5d409d620, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mapRadius: 40
+  mapRadius: 8
   groundColor: {r: 0.5789066, g: 0.5849056, b: 0, a: 1}
+  defaultBlock: {fileID: 11400000, guid: 29409315ce3e9bc4a89da2d800726f57, type: 2}
   treePrefab: {fileID: 5079758663629486590, guid: 5d539eb0d033ac54a973e0cb07f889ce, type: 3}
   rockPrefab: {fileID: 6802935025293368480, guid: 32d3cc906c1a67c4495762b8464554db, type: 3}
   grassPrefab: {fileID: 1756457037529692862, guid: 075ff0038b1c0194c8d8c9251b1ec2ec, type: 3}
   bushPrefab: {fileID: 7925791472891497727, guid: e155fe4a4f1ebc048aece7d304b00bcf, type: 3}
-  treeCount: 150
-  rockCount: 100
-  grassCount: 500
-  bushCount: 300
+  treeCount: 7
+  rockCount: 6
+  grassCount: 10
+  bushCount: 10
   treeMinScale: 0.8
   treeMaxScale: 1.5
   rockMinScale: 0.5
@@ -2673,7 +2716,13 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2361560658221704272, guid: 49042b410479d1b4f9570355ef88d4b8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1715482138}
+    - targetCorrespondingSourceObject: {fileID: 2361560658221704272, guid: 49042b410479d1b4f9570355ef88d4b8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1715482142}
   m_SourcePrefab: {fileID: 100100000, guid: 49042b410479d1b4f9570355ef88d4b8, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

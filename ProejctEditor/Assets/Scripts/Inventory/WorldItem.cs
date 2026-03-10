@@ -69,6 +69,16 @@ public class WorldItem : MonoBehaviour
         if (data.icon != null)
             sr.sprite = data.icon;
 
+        // 아이콘 크기 통일 (월드 기준 0.5x0.5)
+        float targetSize = 0.5f;
+        if (sr.sprite != null)
+        {
+            float ppu = sr.sprite.pixelsPerUnit;
+            float scaleX = targetSize / (sr.sprite.rect.width / ppu);
+            float scaleY = targetSize / (sr.sprite.rect.height / ppu);
+            spriteObj.transform.localScale = new Vector3(scaleX, scaleY, 1f);
+        }
+
         spriteObj.AddComponent<Billboard>();
 
         // WorldItem 컴포넌트
