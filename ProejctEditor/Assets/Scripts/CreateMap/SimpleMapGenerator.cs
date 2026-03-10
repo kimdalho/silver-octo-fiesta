@@ -27,6 +27,10 @@ public class SimpleMapGenerator : MonoBehaviour
     public float rockMinScale = 0.5f;
     public float rockMaxScale = 1.3f;
 
+    [Header("Monsters (Battle only)")]
+    public MonsterData[] spawnableMonsters;
+    public int monsterCount = 5;
+
     [Header("Dropped Items")]
     public ItemData[] spawnableItems;
     public int itemSpawnCount = 10;
@@ -51,6 +55,9 @@ public class SimpleMapGenerator : MonoBehaviour
         SpawnGroup("Grass", grassPrefab, grassCount, 0.5f, 0.7f, 1.2f);
         SpawnGroup("Bushes", bushPrefab, bushCount, 2f, 0.7f, 1.3f);
         SpawnDroppedItems();
+
+        if (!useBlockGrid)
+            SpawnMonsters();
     }
 
     public void Clear()
@@ -159,6 +166,49 @@ public class SimpleMapGenerator : MonoBehaviour
             var data = spawnableItems[Random.Range(0, spawnableItems.Length)];
             var worldItem = WorldItem.Spawn(data, new Vector3(pos.x, 0f, pos.y));
             worldItem.transform.SetParent(parent);
+        }
+    }
+
+    void SpawnMonsters()
+    {
+        if (spawnableMonsters == null || spawnableMonsters.Length == 0) return;
+
+        var parent = new GameObject("Monsters").transform;
+        parent.SetParent(mapRoot.transform);
+
+        for (int i = 0; i < monsterCount; i++)
+        {
+            var data = spawnableMonsters[Random.Range(0, spawnableMonsters.Length)];
+            Vector2 pos = RandomInCircle(mapRadius * 0.8f, 5f);
+
+            var go = new GameObject($"Monster_{data.name}_{i}");
+            go.transform.SetParent(parent);
+            go.transform.position = new Vector3(pos.x, 0f, pos.y);
+
+            // CharacterController
+            var cc = go.AddComponent<CharacterController>();
+            cc.height = 1.8f;
+            cc.radius = 0.4f;
+            cc.center = new Vector3(0f, 0.9f, 0f);
+
+            // 비주얼 (스프라이트 폴백)
+            var spriteObj = new GameObject("Sprite");
+            spriteObj.transform.SetParent(go.transform);
+            spriteObj.transform.localPosition = new Vector3(0f, 1f, 0f);
+            var sr = spriteObj.AddComponent<SpriteRenderer>();
+            spriteObj.AddComponent<Billboard>();
+
+            var tex = new Texture2D(2, 2);
+            Color c = new Color(0.7f, 0.15f, 0.15f);
+            tex.SetPixels(new[] { c, c, c, c });
+            tex.Apply();
+            sr.sprite = Sprite.Create(tex, new Rect(0, 0, 2, 2), new Vector2(0.5f, 0f), 2);
+
+            // 컴포넌트
+            go.AddComponent<Damageable>();
+            go.AddComponent<DropTable>();
+            var ai = go.AddComponent<MonsterAI>();
+            ai.data = data;
         }
     }
 

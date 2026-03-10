@@ -1931,6 +1931,9 @@ MonoBehaviour:
   treeMaxScale: 1.5
   rockMinScale: 0.5
   rockMaxScale: 1.3
+  spawnableMonsters:
+  - {fileID: 11400000, guid: fb3b8d225686bf74faa48d6a92fe1626, type: 2}
+  monsterCount: 5
   spawnableItems:
   - {fileID: 11400000, guid: 378a7b7dd6c64d747a0bc9ff4cfcc171, type: 2}
   - {fileID: 11400000, guid: e8dd339ef3384e84da4675ae0276a538, type: 2}
