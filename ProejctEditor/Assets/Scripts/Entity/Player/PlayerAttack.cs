@@ -11,20 +11,33 @@ public class PlayerAttack : MonoBehaviour
 
     void Update()
     {
-        // 마지막 이동 방향 추적 (카메라 기준, PlayerMoveCC와 동일)
-        float h = Input.GetAxisRaw("Horizontal");
-        float v = Input.GetAxisRaw("Vertical");
-        if (h != 0f || v != 0f)
-        {
-            Transform cam = Camera.main.transform;
-            Vector3 forward = cam.forward;
-            Vector3 right = cam.right;
-            forward.y = 0f;
-            right.y = 0f;
-            forward.Normalize();
-            right.Normalize();
+        bool lockedOn = LockOnTarget.instance != null && LockOnTarget.instance.IsLockedOn;
 
-            lastMoveDir = (forward * v + right * h).normalized;
+        if (lockedOn)
+        {
+            // 락온 중: 타겟 방향으로 공격
+            Vector3 dir = LockOnTarget.instance.CurrentTarget.position - transform.position;
+            dir.y = 0f;
+            if (dir.sqrMagnitude > 0.001f)
+                lastMoveDir = dir.normalized;
+        }
+        else
+        {
+            // 마지막 이동 방향 추적 (카메라 기준, PlayerMoveCC와 동일)
+            float h = Input.GetAxisRaw("Horizontal");
+            float v = Input.GetAxisRaw("Vertical");
+            if (h != 0f || v != 0f)
+            {
+                Transform cam = Camera.main.transform;
+                Vector3 forward = cam.forward;
+                Vector3 right = cam.right;
+                forward.y = 0f;
+                right.y = 0f;
+                forward.Normalize();
+                right.Normalize();
+
+                lastMoveDir = (forward * v + right * h).normalized;
+            }
         }
 
         if (Input.GetMouseButtonDown(0) && Time.time >= lastAttackTime + attackCooldown)

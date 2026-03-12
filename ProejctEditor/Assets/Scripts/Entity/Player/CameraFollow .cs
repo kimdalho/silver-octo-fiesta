@@ -153,6 +153,13 @@ public class CameraFollow : MonoBehaviour
 
     private void ComputeShoulderView(out Vector3 pos, out Quaternion rot)
     {
+        // 락온 활성화 시 자동 추적 카메라
+        if (LockOnTarget.instance != null && LockOnTarget.instance.IsLockedOn)
+        {
+            ComputeLockOnView(out pos, out rot);
+            return;
+        }
+
         // 마우스 입력 (커서 잠김 상태에서만)
         if (Cursor.lockState == CursorLockMode.Locked)
         {
@@ -180,5 +187,36 @@ public class CameraFollow : MonoBehaviour
 
         pos = target.position + camRotation * localOffset;
         rot = Quaternion.LookRotation(target.position + Vector3.up * shoulderOffset.y - pos);
+    }
+
+    private void ComputeLockOnView(out Vector3 pos, out Quaternion rot)
+    {
+        Transform lockTarget = LockOnTarget.instance.CurrentTarget;
+
+        // 플레이어 → 타겟 방향
+        Vector3 dirToTarget = lockTarget.position - target.position;
+        dirToTarget.y = 0f;
+
+        // 카메라가 플레이어 뒤쪽에 위치하도록 yaw 계산
+        float targetYaw = Mathf.Atan2(dirToTarget.x, dirToTarget.z) * Mathf.Rad2Deg;
+        float targetPitch = 15f; // 약간 위에서 내려다봄
+
+        // 부드러운 전환
+        yaw = Mathf.LerpAngle(yaw, targetYaw, shoulderSmooth * Time.deltaTime);
+        pitch = Mathf.Lerp(pitch, targetPitch, shoulderSmooth * Time.deltaTime);
+
+        Quaternion camRotation = Quaternion.Euler(pitch, yaw, 0f);
+
+        Vector3 localOffset = new Vector3(
+            shoulderOffset.x,
+            shoulderOffset.y,
+            -shoulderDist
+        );
+
+        pos = target.position + camRotation * localOffset;
+
+        // 플레이어와 타겟의 중간점을 바라봄
+        Vector3 midPoint = (target.position + lockTarget.position) * 0.5f + Vector3.up * shoulderOffset.y;
+        rot = Quaternion.LookRotation(midPoint - pos);
     }
 }

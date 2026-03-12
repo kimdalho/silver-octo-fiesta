@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bedd8b15d38b81a43afed8cc5fe393e7, type: 3}
   m_Name: Monster1
   m_EditorClassIdentifier: 
+  prefab: {fileID: 1000000000000000, guid: d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2, type: 3}
   maxHP: 50
   attack: 5
   moveSpeed: 2

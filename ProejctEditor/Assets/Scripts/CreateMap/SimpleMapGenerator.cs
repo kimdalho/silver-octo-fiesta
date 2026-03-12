@@ -4,6 +4,7 @@ public class SimpleMapGenerator : MonoBehaviour
 {
     [Header("Ground")]
     public float mapRadius = 40f;
+    public float battleMapRadius = 80f;
     public Color groundColor = new Color(0.36f, 0.25f, 0.13f);
 
     [Header("Block Grid (Local Map)")]
@@ -28,6 +29,7 @@ public class SimpleMapGenerator : MonoBehaviour
     public float rockMaxScale = 1.3f;
 
     [Header("Monsters (Battle only)")]
+    public GameObject monsterPrefab;
     public MonsterData[] spawnableMonsters;
     public int monsterCount = 5;
 
@@ -38,6 +40,7 @@ public class SimpleMapGenerator : MonoBehaviour
     private GameObject mapRoot;
 
     private bool useBlockGrid;
+    private float currentRadius;
 
     public void Generate()
     {
@@ -47,6 +50,8 @@ public class SimpleMapGenerator : MonoBehaviour
         useBlockGrid = GameLoopManager.instance != null
             && GameLoopManager.instance.CurrentStep == GameStep.Local
             && defaultBlock != null;
+
+        currentRadius = useBlockGrid ? mapRadius : battleMapRadius;
 
         mapRoot = new GameObject("MapRoot");
         CreateGround();
@@ -86,7 +91,7 @@ public class SimpleMapGenerator : MonoBehaviour
             ground.name = "Ground";
             ground.transform.SetParent(mapRoot.transform);
             ground.transform.position = Vector3.zero;
-            ground.transform.localScale = new Vector3(mapRadius * 2f, 0.1f, mapRadius * 2f);
+            ground.transform.localScale = new Vector3(currentRadius * 2f, 0.1f, currentRadius * 2f);
 
             Destroy(ground.GetComponent<Collider>());
             var box = ground.AddComponent<BoxCollider>();
@@ -106,7 +111,7 @@ public class SimpleMapGenerator : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            Vector2 pos = RandomInCircle(mapRadius * 0.9f, minDist);
+            Vector2 pos = RandomInCircle(currentRadius * 0.9f, minDist);
             float scale = Random.Range(minScale, maxScale);
 
             GameObject obj;
@@ -162,7 +167,7 @@ public class SimpleMapGenerator : MonoBehaviour
 
         for (int i = 0; i < itemSpawnCount; i++)
         {
-            Vector2 pos = RandomInCircle(mapRadius * 0.8f, 3f);
+            Vector2 pos = RandomInCircle(currentRadius * 0.8f, 3f);
             var data = spawnableItems[Random.Range(0, spawnableItems.Length)];
             var worldItem = WorldItem.Spawn(data, new Vector3(pos.x, 0f, pos.y));
             worldItem.transform.SetParent(parent);
@@ -179,37 +184,54 @@ public class SimpleMapGenerator : MonoBehaviour
         for (int i = 0; i < monsterCount; i++)
         {
             var data = spawnableMonsters[Random.Range(0, spawnableMonsters.Length)];
-            Vector2 pos = RandomInCircle(mapRadius * 0.8f, 5f);
+            Vector2 pos = RandomInCircle(currentRadius * 0.8f, 5f);
 
-            var go = new GameObject($"Monster_{data.name}_{i}");
-            go.transform.SetParent(parent);
+            GameObject go;
+            if (monsterPrefab != null)
+            {
+                go = Instantiate(monsterPrefab, parent);
+            }
+            else
+            {
+                go = CreateMonsterFallback(parent);
+            }
+
+            go.name = $"Monster_{data.name}_{i}";
             go.transform.position = new Vector3(pos.x, 0f, pos.y);
 
-            // CharacterController
-            var cc = go.AddComponent<CharacterController>();
-            cc.height = 1.8f;
-            cc.radius = 0.4f;
-            cc.center = new Vector3(0f, 0.9f, 0f);
-
-            // 비주얼 (스프라이트 폴백)
-            var spriteObj = new GameObject("Sprite");
-            spriteObj.transform.SetParent(go.transform);
-            spriteObj.transform.localPosition = new Vector3(0f, 1f, 0f);
-            var sr = spriteObj.AddComponent<SpriteRenderer>();
-            spriteObj.AddComponent<Billboard>();
-
-            var tex = new Texture2D(2, 2);
-            Color c = new Color(0.7f, 0.15f, 0.15f);
-            tex.SetPixels(new[] { c, c, c, c });
-            tex.Apply();
-            sr.sprite = Sprite.Create(tex, new Rect(0, 0, 2, 2), new Vector2(0.5f, 0f), 2);
-
-            // 컴포넌트
-            go.AddComponent<Damageable>();
-            go.AddComponent<DropTable>();
-            var ai = go.AddComponent<MonsterAI>();
-            ai.data = data;
+            var ai = go.GetComponent<MonsterAI>();
+            if (ai != null)
+                ai.data = data;
         }
+    }
+
+    GameObject CreateMonsterFallback(Transform parent)
+    {
+        var go = new GameObject("Monster");
+        go.transform.SetParent(parent);
+
+        var cc = go.AddComponent<CharacterController>();
+        cc.height = 1.8f;
+        cc.radius = 0.4f;
+        cc.center = new Vector3(0f, 0.9f, 0f);
+
+        var spriteObj = new GameObject("Sprite");
+        spriteObj.transform.SetParent(go.transform);
+        spriteObj.transform.localPosition = new Vector3(0f, 1f, 0f);
+        var sr = spriteObj.AddComponent<SpriteRenderer>();
+        spriteObj.AddComponent<Billboard>();
+
+        var tex = new Texture2D(2, 2);
+        Color c = new Color(0.7f, 0.15f, 0.15f);
+        tex.SetPixels(new[] { c, c, c, c });
+        tex.Apply();
+        sr.sprite = Sprite.Create(tex, new Rect(0, 0, 2, 2), new Vector2(0.5f, 0f), 2);
+
+        go.AddComponent<Damageable>();
+        go.AddComponent<DropTable>();
+        go.AddComponent<MonsterAI>();
+
+        return go;
     }
 
     Vector2 RandomInCircle(float radius, float minDistFromCenter)
