@@ -4,7 +4,7 @@ public enum ItemType
 {
     Consumable,
     Equipment,
-    MaterialItme
+    MaterialItem
 }
 
 [CreateAssetMenu(fileName = "NewItem", menuName = "Inventory/Item")]

@@ -7,9 +7,6 @@ public class SimpleMapGenerator : MonoBehaviour
     public float battleMapRadius = 80f;
     public Color groundColor = new Color(0.36f, 0.25f, 0.13f);
 
-    [Header("Block Grid (Local Map)")]
-    public BlockData defaultBlock;
-
     [Header("Prefabs (auto-assigned by Tools > Create Nature Prefabs)")]
     public GameObject treePrefab;
     public GameObject rockPrefab;
@@ -28,7 +25,7 @@ public class SimpleMapGenerator : MonoBehaviour
     public float rockMinScale = 0.5f;
     public float rockMaxScale = 1.3f;
 
-    [Header("Monsters (Battle only)")]
+    [Header("Monsters")]
     public GameObject monsterPrefab;
     public MonsterData[] spawnableMonsters;
     public int monsterCount = 5;
@@ -39,19 +36,16 @@ public class SimpleMapGenerator : MonoBehaviour
 
     private GameObject mapRoot;
 
-    private bool useBlockGrid;
     private float currentRadius;
 
     public void Generate()
     {
         Clear();
 
-        // GameLoopManager의 현재 스텝으로 판단
-        useBlockGrid = GameLoopManager.instance != null
-            && GameLoopManager.instance.CurrentStep == GameStep.Local
-            && defaultBlock != null;
+        bool isBattle = GameLoopManager.instance != null
+            && GameLoopManager.instance.CurrentStep != GameStep.Local;
 
-        currentRadius = useBlockGrid ? mapRadius : battleMapRadius;
+        currentRadius = isBattle ? battleMapRadius : mapRadius;
 
         mapRoot = new GameObject("MapRoot");
         CreateGround();
@@ -61,7 +55,7 @@ public class SimpleMapGenerator : MonoBehaviour
         SpawnGroup("Bushes", bushPrefab, bushCount, 2f, 0.7f, 1.3f);
         SpawnDroppedItems();
 
-        if (!useBlockGrid)
+        if (isBattle)
             SpawnMonsters();
     }
 
@@ -73,35 +67,20 @@ public class SimpleMapGenerator : MonoBehaviour
 
     void CreateGround()
     {
-        if (useBlockGrid)
-        {
-            // 로컬맵: 블록 그리드 바닥
-            var groundObj = new GameObject("BlockGround");
-            groundObj.transform.SetParent(mapRoot.transform);
-            groundObj.transform.position = Vector3.zero;
+        var ground = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        ground.name = "Ground";
+        ground.transform.SetParent(mapRoot.transform);
+        ground.transform.position = Vector3.zero;
+        ground.transform.localScale = new Vector3(currentRadius * 2f, 0.1f, currentRadius * 2f);
 
-            var grid = groundObj.AddComponent<BlockGrid>();
-            grid.defaultBlock = defaultBlock;
-            grid.Initialize();
-        }
-        else
-        {
-            // 배틀맵: 기존 실린더 바닥
-            var ground = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            ground.name = "Ground";
-            ground.transform.SetParent(mapRoot.transform);
-            ground.transform.position = Vector3.zero;
-            ground.transform.localScale = new Vector3(currentRadius * 2f, 0.1f, currentRadius * 2f);
+        Destroy(ground.GetComponent<Collider>());
+        var box = ground.AddComponent<BoxCollider>();
+        box.center = Vector3.zero;
+        box.size = Vector3.one;
 
-            Destroy(ground.GetComponent<Collider>());
-            var box = ground.AddComponent<BoxCollider>();
-            box.center = Vector3.zero;
-            box.size = Vector3.one;
-
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            mat.color = groundColor;
-            ground.GetComponent<Renderer>().material = mat;
-        }
+        var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+        mat.color = groundColor;
+        ground.GetComponent<Renderer>().material = mat;
     }
 
     void SpawnGroup(string groupName, GameObject prefab, int count, float minDist, float minScale, float maxScale)
@@ -181,10 +160,16 @@ public class SimpleMapGenerator : MonoBehaviour
         var parent = new GameObject("Monsters").transform;
         parent.SetParent(mapRoot.transform);
 
+        float sectorAngle = 360f / monsterCount;
+
         for (int i = 0; i < monsterCount; i++)
         {
             var data = spawnableMonsters[Random.Range(0, spawnableMonsters.Length)];
-            Vector2 pos = RandomInCircle(currentRadius * 0.8f, 5f);
+
+            // 각 몬스터에 고유 구역 배정, 구역 안에서 랜덤 배치
+            float angle = (sectorAngle * i + Random.Range(0f, sectorAngle)) * Mathf.Deg2Rad;
+            float dist = Random.Range(currentRadius * 0.3f, currentRadius * 0.8f);
+            Vector2 pos = new Vector2(Mathf.Cos(angle) * dist, Mathf.Sin(angle) * dist);
 
             GameObject go;
             if (monsterPrefab != null)

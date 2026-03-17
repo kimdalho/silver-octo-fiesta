@@ -11,7 +11,6 @@ public enum EquipSlot
 public class EquipmentData : ItemData
 {
     public EquipSlot equipSlot;
-    public bool isShovel;
     public StatModifier[] statModifiers;
 
     private void OnValidate()

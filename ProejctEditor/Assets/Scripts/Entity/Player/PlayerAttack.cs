@@ -1,86 +1,9 @@
 using UnityEngine;
 
+/// <summary>
+/// PlayerActions.cs로 대체됨. Unity 참조 깨짐 방지용 빈 클래스.
+/// 에디터에서 이 컴포넌트를 제거하고 PlayerActions를 추가하세요.
+/// </summary>
 public class PlayerAttack : MonoBehaviour
 {
-    public float attackRange = 1f;
-    public float attackRadius = 0.5f;
-    public float attackCooldown = 0.5f;
-
-    private float lastAttackTime;
-    private Vector3 lastMoveDir = Vector3.forward;
-
-    void Update()
-    {
-        bool lockedOn = LockOnTarget.instance != null && LockOnTarget.instance.IsLockedOn;
-
-        if (lockedOn)
-        {
-            // 락온 중: 타겟 방향으로 공격
-            Vector3 dir = LockOnTarget.instance.CurrentTarget.position - transform.position;
-            dir.y = 0f;
-            if (dir.sqrMagnitude > 0.001f)
-                lastMoveDir = dir.normalized;
-        }
-        else
-        {
-            // 마지막 이동 방향 추적 (카메라 기준, PlayerMoveCC와 동일)
-            float h = Input.GetAxisRaw("Horizontal");
-            float v = Input.GetAxisRaw("Vertical");
-            if (h != 0f || v != 0f)
-            {
-                Transform cam = Camera.main.transform;
-                Vector3 forward = cam.forward;
-                Vector3 right = cam.right;
-                forward.y = 0f;
-                right.y = 0f;
-                forward.Normalize();
-                right.Normalize();
-
-                lastMoveDir = (forward * v + right * h).normalized;
-            }
-        }
-
-        if (Input.GetMouseButtonDown(0) && Time.time >= lastAttackTime + attackCooldown)
-        {
-            Attack();
-            lastAttackTime = Time.time;
-        }
-    }
-
-    void Attack()
-    {
-        Vector3 attackPos = transform.position + lastMoveDir * attackRange;
-        Collider[] hits = Physics.OverlapSphere(attackPos, attackRadius);
-
-        // 삽 장착 여부 확인
-        bool hasShovel = false;
-        if (InventoryManager.instance != null)
-        {
-            var weapon = InventoryManager.instance.equipment.GetEquip(EquipSlot.Weapon);
-            if (weapon != null && weapon.isShovel)
-                hasShovel = true;
-        }
-
-        foreach (var hit in hits)
-        {
-            if (hit.gameObject == gameObject) continue;
-
-            // 블록은 삽 들고 있을 때만 타격
-            if (hit.GetComponent<BlockMarker>() != null && !hasShovel)
-                continue;
-
-            var damageable = hit.GetComponent<Damageable>();
-            if (damageable != null)
-            {
-                float damage = PlayerStats.instance != null ? PlayerStats.instance.Attack : 10f;
-                damageable.TakeDamage(damage);
-            }
-        }
-    }
-
-    void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position + lastMoveDir * attackRange, attackRadius);
-    }
 }

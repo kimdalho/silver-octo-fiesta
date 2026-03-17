@@ -55,14 +55,21 @@ public class CameraFollow : MonoBehaviour
         shoulderDist = shoulderOffset.magnitude;
     }
 
-    public void SetMode(CameraMode newMode)
+    public void SetMode(CameraMode newMode, bool instant = false)
     {
         if (mode == newMode) return;
 
-        // 전환 보간 시작: 현재 카메라 상태 저장
-        transitionPos = transform.position;
-        transitionRot = transform.rotation;
-        transitionT = 0f;
+        if (!instant)
+        {
+            // 전환 보간 시작: 현재 카메라 상태 저장
+            transitionPos = transform.position;
+            transitionRot = transform.rotation;
+            transitionT = 0f;
+        }
+        else
+        {
+            transitionT = 1f;
+        }
 
         mode = newMode;
 
