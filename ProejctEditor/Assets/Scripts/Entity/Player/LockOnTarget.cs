@@ -123,6 +123,13 @@ public class LockOnTarget : MonoBehaviour
         Release();
     }
 
+    public bool AutoLockOn()
+    {
+        if (IsLockedOn) Release();
+        TryLockOn();
+        return IsLockedOn;
+    }
+
     public void Release()
     {
         if (targetDamageable != null)

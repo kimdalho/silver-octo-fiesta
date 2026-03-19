@@ -4,6 +4,7 @@
 public class PlayerMoveCC : MonoBehaviour
 {
     public float moveSpeed = 5f;
+    public float walkMultiplier = 0.4f;
     public float gravity = -20f;
     public float turnSpeed = 10f;
     public Transform cameraTransform;
@@ -78,8 +79,9 @@ public class PlayerMoveCC : MonoBehaviour
             }
         }
 
-        // 수평 이동
-        cc.Move(moveDir * moveSpeed * Time.deltaTime);
+        // 수평 이동 (Shift: 천천히 걷기)
+        float speed = Input.GetKey(KeyCode.LeftShift) ? moveSpeed * walkMultiplier : moveSpeed;
+        cc.Move(moveDir * speed * Time.deltaTime);
 
         // 중력(바닥 붙이기)
         if (cc.isGrounded && velocity.y < 0)

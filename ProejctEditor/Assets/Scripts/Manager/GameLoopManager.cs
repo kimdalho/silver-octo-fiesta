@@ -55,6 +55,10 @@ public class GameLoopManager : MonoBehaviour
 
         GenerateMap();
         SpawnPlayer(Vector3.zero);
+
+        // 에디터에서 BattleScene 직접 실행 시 셋업
+        if (SceneManager.GetActiveScene().name == "2.BattleScene")
+            SetupBattleComponents();
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -64,6 +68,10 @@ public class GameLoopManager : MonoBehaviour
         GenerateMap();
         SpawnPlayer(Vector3.zero);
 
+        // 사망 후 복귀 시 HP 리셋
+        if (PlayerStats.instance != null && PlayerStats.instance.isDead)
+            PlayerStats.instance.Respawn();
+
         // 씬별 카메라 모드 전환
         if (CameraFollow.instance != null)
         {
@@ -72,6 +80,12 @@ public class GameLoopManager : MonoBehaviour
             else
                 CameraFollow.instance.SetMode(CameraMode.TopView);
         }
+
+        // 배틀씬 전용 컴포넌트 셋업
+        if (scene.name == "2.BattleScene")
+            SetupBattleComponents();
+        else
+            CleanupBattleComponents();
     }
 
     public void ChangeStep(GameStep step)
@@ -151,6 +165,40 @@ public class GameLoopManager : MonoBehaviour
     {
         if (mapGenerator != null)
             mapGenerator.Generate();
+    }
+
+    private void SetupBattleComponents()
+    {
+        if (player == null) return;
+
+        // PlayerActions
+        if (player.GetComponent<PlayerActions>() == null)
+            player.gameObject.AddComponent<PlayerActions>();
+
+        // LockOnTarget
+        if (player.GetComponent<LockOnTarget>() == null)
+            player.gameObject.AddComponent<LockOnTarget>();
+
+        // ObserveRhythmUI (씬에 없으면 생성)
+        if (ObserveRhythmUI.instance == null)
+        {
+            GameObject rhythmObj = new GameObject("ObserveRhythmUI");
+            rhythmObj.AddComponent<ObserveRhythmUI>();
+        }
+    }
+
+    private void CleanupBattleComponents()
+    {
+        if (player == null) return;
+
+        var pa = player.GetComponent<PlayerActions>();
+        if (pa != null) Destroy(pa);
+
+        var lot = player.GetComponent<LockOnTarget>();
+        if (lot != null) Destroy(lot);
+
+        if (ObserveRhythmUI.instance != null)
+            Destroy(ObserveRhythmUI.instance.gameObject);
     }
 
     public void LoadBattleField()

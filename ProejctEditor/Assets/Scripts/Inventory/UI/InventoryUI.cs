@@ -49,7 +49,21 @@ public class InventoryUI : MonoBehaviour
     {
         isOpen = !isOpen;
         panel.SetActive(isOpen);
-        if (isOpen) RefreshAll();
+        if (isOpen)
+        {
+            RefreshAll();
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+        else
+        {
+            // ShoulderView면 커서 다시 잠금
+            if (CameraFollow.instance != null && CameraFollow.instance.mode == CameraMode.ShoulderView)
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
+        }
     }
 
     private void RefreshSlot(int index)

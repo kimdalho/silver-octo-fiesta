@@ -17,6 +17,7 @@ public class PlayerStats : MonoBehaviour
     public float MoveSpeed { get; private set; }
 
     public float currentHP;
+    public bool isDead;
 
     private PlayerMoveCC playerMove;
     private System.Action<EquipSlot> onEquipChangedHandler;
@@ -88,14 +89,28 @@ public class PlayerStats : MonoBehaviour
 
     public void TakeDamage(float amount)
     {
+        if (isDead) return;
+
         float damage = Mathf.Max(amount - Defense, 1f);
         currentHP -= damage;
 
         if (currentHP <= 0f)
         {
             currentHP = 0f;
+            isDead = true;
+
             if (InventoryManager.instance != null)
                 InventoryManager.instance.OnPlayerDeath();
+
+            if (GameLoopManager.instance != null)
+                GameLoopManager.instance.LoadLocalField();
         }
+    }
+
+    public void Respawn()
+    {
+        isDead = false;
+        Recalculate();
+        currentHP = MaxHP;
     }
 }

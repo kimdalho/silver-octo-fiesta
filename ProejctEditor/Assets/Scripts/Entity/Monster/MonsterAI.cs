@@ -212,6 +212,16 @@ public class MonsterAI : MonoBehaviour
     }
 
     /// <summary>
+    /// 리듬 미니게임 성공 시 관찰 즉시 완료
+    /// </summary>
+    public void CompleteObservation()
+    {
+        observationProgress = 1f;
+    }
+
+    public bool IsRampaging => state == State.Rampage;
+
+    /// <summary>
     /// 포획 확률 계산
     /// </summary>
     public float GetCaptureChance()

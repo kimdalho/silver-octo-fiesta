@@ -1497,9 +1497,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e8d19208f0434548b35ead67e39dd28, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attackRange: 1
-  attackRadius: 0.73
-  attackCooldown: 0.5
 --- !u!114 &1715482142
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1512,10 +1509,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24d760212a3fe5a479ffb6b5a17f27cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  placeDistance: 5
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 4294967295
 --- !u!1 &1752762232
 GameObject:
   m_ObjectHideFlags: 0
@@ -1917,8 +1910,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mapRadius: 8
+  battleMapRadius: 80
   groundColor: {r: 0.5789066, g: 0.5849056, b: 0, a: 1}
-  defaultBlock: {fileID: 11400000, guid: 29409315ce3e9bc4a89da2d800726f57, type: 2}
   treePrefab: {fileID: 5079758663629486590, guid: 5d539eb0d033ac54a973e0cb07f889ce, type: 3}
   rockPrefab: {fileID: 6802935025293368480, guid: 32d3cc906c1a67c4495762b8464554db, type: 3}
   grassPrefab: {fileID: 1756457037529692862, guid: 075ff0038b1c0194c8d8c9251b1ec2ec, type: 3}
@@ -1931,6 +1924,7 @@ MonoBehaviour:
   treeMaxScale: 1.5
   rockMinScale: 0.5
   rockMaxScale: 1.3
+  monsterPrefab: {fileID: 0}
   spawnableMonsters:
   - {fileID: 11400000, guid: fb3b8d225686bf74faa48d6a92fe1626, type: 2}
   monsterCount: 5

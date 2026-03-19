@@ -27,5 +27,14 @@ public class MonsterData : ScriptableObject
     public float trapBonus = 0.15f;
     public float observeBonus = 0.2f;
 
+    [Header("리듬 미니게임")]
+    public int rhythmNoteCount = 8;
+    public float rhythmNoteInterval = 0.8f;
+    public float rhythmApproachTime = 1.5f;
+    public float rhythmPerfectWindow = 0.08f;
+    public float rhythmGoodWindow = 0.2f;
+    public float rhythmMissWindow = 0.35f;
+    public int rhythmMissLimit = 3;
+
     public DropTable.DropEntry[] drops;
 }

@@ -17,6 +17,10 @@ public class PlayerActions : MonoBehaviour
     private bool isHiding;
     private CharacterController cc;
 
+    // 리듬 미니게임
+    private bool isInRhythmGame;
+    private MonsterAI rhythmTargetMonster;
+
     void Awake()
     {
         cc = GetComponent<CharacterController>();
@@ -24,6 +28,13 @@ public class PlayerActions : MonoBehaviour
 
     void Update()
     {
+        // 리듬 게임 중 → 전체 입력 차단 (ESC만 허용)
+        if (isInRhythmGame)
+        {
+            HandleRhythmGameInput();
+            return;
+        }
+
         // 숨기 중 타이머
         if (isHiding)
         {
@@ -38,12 +49,10 @@ public class PlayerActions : MonoBehaviour
 
         MonsterAI lockedMonster = GetLockedMonsterAI();
 
-        // Q (홀드) - 관찰
-        if (Input.GetKey(KeyCode.Q) && lockedMonster != null)
+        // Q - 관찰 리듬 미니게임 시작
+        if (Input.GetKeyDown(KeyCode.Q))
         {
-            lockedMonster.Observe(Time.deltaTime);
-            float pct = lockedMonster.observationProgress * 100f;
-            Debug.Log($"[관찰] {lockedMonster.data?.name ?? "???"} - {pct:F0}%");
+            TryStartObserveRhythm();
         }
 
         // W - 돌 던지기 (근처 생물 위협)
@@ -119,6 +128,94 @@ public class PlayerActions : MonoBehaviour
             else
                 Debug.Log($"[포획] 실패... (확률 {chance * 100f:F0}%)");
         }
+    }
+
+    void TryStartObserveRhythm()
+    {
+        if (LockOnTarget.instance == null) return;
+
+        // 자동 락온
+        if (!LockOnTarget.instance.AutoLockOn())
+        {
+            Debug.Log("[관찰] 시야 내 대상 없음");
+            return;
+        }
+
+        MonsterAI monster = GetLockedMonsterAI();
+        if (monster == null) return;
+
+        // 이미 관찰 완료
+        if (monster.observationProgress >= 1f)
+        {
+            Debug.Log("[관찰] 이미 관찰 완료된 대상");
+            return;
+        }
+
+        // 폭주 중인 몬스터 관찰 불가
+        if (monster.IsRampaging)
+        {
+            Debug.Log("[관찰] 폭주 중인 대상은 관찰 불가");
+            return;
+        }
+
+        if (ObserveRhythmUI.instance == null)
+        {
+            Debug.LogWarning("[관찰] ObserveRhythmUI가 씬에 없습니다!");
+            return;
+        }
+
+        // 리듬 게임 진입 (이동은 유지)
+        isInRhythmGame = true;
+        rhythmTargetMonster = monster;
+
+        // 커서 해제
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        Debug.Log($"[관찰] 리듬 미니게임 시작 - {monster.data?.name ?? "???"}");
+        ObserveRhythmUI.instance.StartRhythm(monster.data, OnRhythmComplete);
+    }
+
+    void HandleRhythmGameInput()
+    {
+        // ESC → 강제 취소
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (ObserveRhythmUI.instance != null)
+                ObserveRhythmUI.instance.ForceCancel();
+        }
+    }
+
+    void OnRhythmComplete(bool success)
+    {
+        if (success)
+        {
+            if (rhythmTargetMonster != null)
+            {
+                rhythmTargetMonster.CompleteObservation();
+                Debug.Log("[관찰] 성공! 관찰 완료.");
+            }
+        }
+        else
+        {
+            if (rhythmTargetMonster != null)
+            {
+                rhythmTargetMonster.TriggerRampage();
+                Debug.Log("[관찰] 실패! 몬스터가 폭주합니다!");
+            }
+        }
+
+        // 공통 정리
+        isInRhythmGame = false;
+        rhythmTargetMonster = null;
+
+        // 락온 해제
+        if (LockOnTarget.instance != null)
+            LockOnTarget.instance.Release();
+
+        // 커서 재잠금 (ShoulderView)
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     MonsterAI GetLockedMonsterAI()
