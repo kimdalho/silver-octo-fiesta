@@ -4,9 +4,22 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// v1.0 리듬 미니게임 — v2.0에서 제거 예정.
+/// MonsterData v2.0 개편으로 제거된 리듬 필드는 임시 상수로 대체.
+/// </summary>
 public class ObserveRhythmUI : MonoBehaviour
 {
     public static ObserveRhythmUI instance { get; private set; }
+
+    // ── v1.0 fallback 상수 (MonsterData에서 제거된 리듬 필드) ──
+    const int RHYTHM_NOTE_COUNT = 8;
+    const int RHYTHM_MISS_LIMIT = 3;
+    const float RHYTHM_NOTE_INTERVAL = 1.2f;
+    const float RHYTHM_APPROACH_TIME = 1.5f;
+    const float RHYTHM_PERFECT_WINDOW = 0.15f;
+    const float RHYTHM_GOOD_WINDOW = 0.3f;
+    const float RHYTHM_MISS_WINDOW = 0.5f;
 
     // 동적 생성 UI
     private Canvas canvas;
@@ -182,12 +195,12 @@ public class ObserveRhythmUI : MonoBehaviour
         currentData = data;
         this.onComplete = onComplete;
 
-        totalNotes = data.rhythmNoteCount;
+        totalNotes = RHYTHM_NOTE_COUNT;
         resolvedNotes = 0;
         combo = 0;
         maxCombo = 0;
         missCount = 0;
-        missLimit = data.rhythmMissLimit;
+        missLimit = RHYTHM_MISS_LIMIT;
         isActive = true;
 
         activeNotes.Clear();
@@ -206,7 +219,7 @@ public class ObserveRhythmUI : MonoBehaviour
             if (!isActive) yield break;
 
             SpawnNote();
-            yield return new WaitForSeconds(currentData.rhythmNoteInterval);
+            yield return new WaitForSeconds(RHYTHM_NOTE_INTERVAL);
         }
     }
 
@@ -224,10 +237,10 @@ public class ObserveRhythmUI : MonoBehaviour
 
         RhythmNote note = obj.GetComponent<RhythmNote>();
         note.Init(
-            currentData.rhythmApproachTime,
-            currentData.rhythmPerfectWindow,
-            currentData.rhythmGoodWindow,
-            currentData.rhythmMissWindow,
+            RHYTHM_APPROACH_TIME,
+            RHYTHM_PERFECT_WINDOW,
+            RHYTHM_GOOD_WINDOW,
+            RHYTHM_MISS_WINDOW,
             OnNoteJudged
         );
         activeNotes.Add(note);

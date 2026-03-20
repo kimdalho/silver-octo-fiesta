@@ -1,5 +1,9 @@
 using UnityEngine;
 
+/// <summary>
+/// v1.0 AI — v2.0에서 MonsterBehavior로 교체 예정.
+/// MonsterData v2.0 개편으로 제거된 필드는 임시 상수로 대체.
+/// </summary>
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(Damageable))]
 [RequireComponent(typeof(DropTable))]
@@ -8,6 +12,19 @@ public class MonsterAI : MonoBehaviour
     enum State { Idle, Alert, Flee, Rampage }
 
     public MonsterData data;
+
+    // ── v1.0 fallback 상수 (MonsterData에서 제거된 필드) ──
+    const float DETECT_RANGE = 15f;
+    const float FLEE_RANGE = 7f;
+    const float SAFE_RANGE = 25f;
+    const float ALERT_DURATION = 5f;
+    const float RAMPAGE_SPEED = 6f;
+    const float RAMPAGE_DURATION = 8f;
+    const float RAMPAGE_ATTACK = 10f;
+    const float OBSERVE_TIME = 5f;
+    const float BASE_CAPTURE_CHANCE = 0.3f;
+    const float TRAP_BONUS = 0.15f;
+    const float OBSERVE_BONUS = 0.2f;
 
     private State state = State.Idle;
     private CharacterController cc;
@@ -50,10 +67,6 @@ public class MonsterAI : MonoBehaviour
         damageable.maxHP = data.maxHP;
         damageable.currentHP = data.maxHP;
 
-        var dropTable = GetComponent<DropTable>();
-        if (dropTable != null)
-            dropTable.drops = data.drops;
-
         if (PlayerStats.instance != null)
             player = PlayerStats.instance.transform;
 
@@ -83,20 +96,20 @@ public class MonsterAI : MonoBehaviour
         switch (state)
         {
             case State.Idle:
-                if (distToPlayer <= data.detectRange)
+                if (distToPlayer <= DETECT_RANGE)
                 {
                     state = State.Alert;
-                    alertTimer = data.alertDuration;
-                    CreatureCodex.instance?.RegisterDiscovery(data);
+                    alertTimer = ALERT_DURATION;
+                    CreatureCodex.instance?.RegisterEncounter(data);
                 }
                 break;
 
             case State.Alert:
-                if (distToPlayer <= data.fleeRange)
+                if (distToPlayer <= FLEE_RANGE)
                 {
                     state = State.Flee;
                 }
-                else if (distToPlayer > data.detectRange)
+                else if (distToPlayer > DETECT_RANGE)
                 {
                     state = State.Idle;
                     PickNewWanderDirection();
@@ -113,7 +126,7 @@ public class MonsterAI : MonoBehaviour
                 break;
 
             case State.Flee:
-                if (distToPlayer >= data.safeRange)
+                if (distToPlayer >= SAFE_RANGE)
                 {
                     state = State.Idle;
                     PickNewWanderDirection();
@@ -159,7 +172,6 @@ public class MonsterAI : MonoBehaviour
 
     void UpdateAlert()
     {
-        // 정지 상태, 플레이어 방향 주시
         if (player == null) return;
 
         Vector3 lookDir = player.position - transform.position;
@@ -192,28 +204,22 @@ public class MonsterAI : MonoBehaviour
         if (!isTrapped && dist > 1.5f)
         {
             dir.Normalize();
-            cc.Move(dir * data.rampageSpeed * Time.deltaTime);
+            cc.Move(dir * RAMPAGE_SPEED * Time.deltaTime);
         }
         else if (dist <= 1.5f && PlayerStats.instance != null)
         {
-            PlayerStats.instance.TakeDamage(data.rampageAttack * Time.deltaTime);
+            PlayerStats.instance.TakeDamage(RAMPAGE_ATTACK * Time.deltaTime);
         }
 
         if (dir.sqrMagnitude > 0.01f)
             transform.rotation = Quaternion.LookRotation(dir.normalized);
     }
 
-    /// <summary>
-    /// 관찰 진행 (PlayerActions에서 매 프레임 호출)
-    /// </summary>
     public void Observe(float deltaTime)
     {
-        observationProgress = Mathf.Clamp01(observationProgress + deltaTime / data.observeTime);
+        observationProgress = Mathf.Clamp01(observationProgress + deltaTime / OBSERVE_TIME);
     }
 
-    /// <summary>
-    /// 리듬 미니게임 성공 시 관찰 즉시 완료
-    /// </summary>
     public void CompleteObservation()
     {
         observationProgress = 1f;
@@ -221,20 +227,14 @@ public class MonsterAI : MonoBehaviour
 
     public bool IsRampaging => state == State.Rampage;
 
-    /// <summary>
-    /// 포획 확률 계산
-    /// </summary>
     public float GetCaptureChance()
     {
-        float chance = data.baseCaptureChance;
-        if (isTrapped) chance += data.trapBonus;
-        if (observationProgress >= 1f) chance += data.observeBonus;
+        float chance = BASE_CAPTURE_CHANCE;
+        if (isTrapped) chance += TRAP_BONUS;
+        if (observationProgress >= 1f) chance += OBSERVE_BONUS;
         return Mathf.Clamp01(chance);
     }
 
-    /// <summary>
-    /// 포획 시도 → true=성공
-    /// </summary>
     public bool TryCapture()
     {
         float chance = GetCaptureChance();
@@ -242,7 +242,6 @@ public class MonsterAI : MonoBehaviour
         if (success)
         {
             isCaptured = true;
-            CreatureCodex.instance?.RegisterCapture(data);
             var dropTable = GetComponent<DropTable>();
             if (dropTable != null) dropTable.SpawnDrops(transform.position);
             Destroy(gameObject);
@@ -254,9 +253,6 @@ public class MonsterAI : MonoBehaviour
         return success;
     }
 
-    /// <summary>
-    /// 덫에 걸림 (Trap에서 호출)
-    /// </summary>
     public void ApplyTrap()
     {
         isTrapped = true;
@@ -268,9 +264,6 @@ public class MonsterAI : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 외부 호출: 플레이어 숨기 등 → 경계 해제 (Alert/Flee → Idle)
-    /// </summary>
     public void CalmDown()
     {
         if (state == State.Rampage) return;
@@ -278,22 +271,16 @@ public class MonsterAI : MonoBehaviour
         PickNewWanderDirection();
     }
 
-    /// <summary>
-    /// 외부 호출: 돌 던지기 등으로 위협 → 도주 전환
-    /// </summary>
     public void Scare()
     {
         if (state == State.Rampage) return;
         state = State.Flee;
     }
 
-    /// <summary>
-    /// 외부 호출: 불 등 특정 트리거 → 폭주 진입
-    /// </summary>
     public void TriggerRampage()
     {
         state = State.Rampage;
-        rampageTimer = data.rampageDuration;
+        rampageTimer = RAMPAGE_DURATION;
     }
 
     void PickNewWanderDirection()

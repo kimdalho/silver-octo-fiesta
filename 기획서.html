@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>silver-octo-fiesta 기획서 v2.0</title>
+<style>
+:root {
+  --bg:#0d1117; --s1:#161b22; --s2:#1c2333; --bd:#30363d;
+  --t:#e6edf3; --t2:#8b949e; --acc:#58a6ff;
+  --g:#3fb950; --y:#d29922; --r:#f85149; --p:#bc8cff; --c:#39d2c0; --o:#f0883e;
+  --water:#4a9eff; --fire:#ff6b4a; --elec:#ffd93d; --grow:#4ade80; --struct:#c084fc; --decay:#9ca3af;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--t);font-family:'Segoe UI','Malgun Gothic',sans-serif;line-height:1.7}
+.wrap{max-width:1100px;margin:0 auto;padding:40px 20px 80px}
+a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+
+/* 타이포 */
+h1{font-size:2.4em;font-weight:800;margin-bottom:4px}
+h1 small{display:block;font-size:.4em;font-weight:400;color:var(--t2);margin-top:6px}
+h2{font-size:1.6em;color:var(--acc);margin:56px 0 20px;padding-bottom:8px;border-bottom:2px solid var(--bd)}
+h3{font-size:1.1em;color:var(--g);margin:24px 0 8px}
+h4{color:var(--p);margin:14px 0 6px;font-size:1em}
+.sub{color:var(--t2);font-size:.92em;margin-bottom:32px}
+
+/* 카드 */
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:20px;margin:12px 0}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin:12px 0}
+.card-accent{border-left:4px solid var(--acc)}
+.card-cyan{border-left:4px solid var(--c)}
+.card-orange{border-left:4px solid var(--o)}
+
+/* 테이블 */
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:.9em}
+th{background:var(--s1);color:var(--acc);padding:10px 12px;border:1px solid var(--bd);text-align:left;font-weight:600}
+td{padding:8px 12px;border:1px solid var(--bd);vertical-align:top}
+tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+tr:hover td{background:var(--s2)}
+
+/* 태그 */
+.t{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.75em;font-weight:700;vertical-align:middle}
+.t-ok{background:#0d3320;color:var(--g)} .t-wip{background:#3d2e00;color:var(--y)}
+.t-no{background:#3d1414;color:var(--r)} .t-new{background:#0d2d2d;color:var(--c)}
+.t-del{background:#2d1a1a;color:#8b6666;text-decoration:line-through}
+
+/* 코드 */
+code{background:var(--s2);color:var(--y);padding:2px 6px;border-radius:4px;font-size:.88em}
+pre{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:16px;overflow-x:auto;font-size:.85em;line-height:1.6;margin:8px 0}
+
+/* 플로우 차트 */
+.flow-row{display:flex;align-items:center;gap:0;margin:16px 0;flex-wrap:wrap;justify-content:center}
+.flow-box{padding:12px 20px;border-radius:10px;text-align:center;font-weight:600;font-size:.92em;min-width:100px;line-height:1.4}
+.flow-arrow{font-size:1.6em;color:var(--t2);padding:0 4px;line-height:1}
+.fb-water{background:#0d2847;border:2px solid var(--water);color:var(--water)}
+.fb-fire{background:#2d1410;border:2px solid var(--fire);color:var(--fire)}
+.fb-elec{background:#2d2a0d;border:2px solid var(--elec);color:var(--elec)}
+.fb-action{background:#1a1a2e;border:2px solid var(--acc);color:var(--acc)}
+.fb-result{background:#0d2d1a;border:2px solid var(--g);color:var(--g)}
+.fb-harvest{background:#2d1f0d;border:2px solid var(--o);color:var(--o)}
+.fb-gray{background:var(--s1);border:2px solid var(--bd);color:var(--t2)}
+
+/* 속성 뱃지 */
+.attr{display:inline-flex;align-items:center;gap:4px;padding:3px 12px;border-radius:20px;font-size:.85em;font-weight:700}
+.a-water{background:#0d2847;color:var(--water);border:1px solid var(--water)}
+.a-fire{background:#2d1410;color:var(--fire);border:1px solid var(--fire)}
+.a-elec{background:#2d2a0d;color:var(--elec);border:1px solid var(--elec)}
+.a-grow{background:#0d2d14;color:var(--grow);border:1px solid var(--grow)}
+.a-struct{background:#1a0d2d;color:var(--struct);border:1px solid var(--struct)}
+.a-decay{background:#1a1a1a;color:var(--decay);border:1px solid var(--decay)}
+
+/* 스탯바 */
+.stats{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0}
+.stat{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:14px 20px;text-align:center;flex:1;min-width:100px}
+.stat b{display:block;font-size:2em;color:var(--acc)}
+.stat span{color:var(--t2);font-size:.82em}
+
+/* 목차 */
+.toc{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:20px 28px;margin:24px 0;columns:2;column-gap:40px}
+.toc ol{padding-left:20px} .toc li{margin:3px 0;break-inside:avoid}
+
+/* 구분선 */
+hr{border:0;border-top:1px solid var(--bd);margin:48px 0}
+
+/* 몬스터 비교표 */
+.cmp-grid{display:grid;grid-template-columns:auto 1fr 1fr 1fr;gap:0;margin:12px 0;border:1px solid var(--bd);border-radius:10px;overflow:hidden}
+.cmp-grid>div{padding:10px 14px;border-bottom:1px solid var(--bd);border-right:1px solid var(--bd);font-size:.88em}
+.cmp-grid>div:nth-child(4n){border-right:none}
+.cmp-grid>.cmp-h{background:var(--s1);font-weight:700;color:var(--acc)}
+
+/* 반응형 */
+@media(max-width:700px){
+  .toc{columns:1}
+  .flow-row{flex-direction:column}
+  .flow-arrow{transform:rotate(90deg)}
+  .cmp-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ==================== HEADER ==================== -->
+<h1>silver-octo-fiesta
+<small>2.5D 생태 퍼즐 게임 — 기획서 v2.0 — 2026.03.20</small>
+</h1>
+<p class="sub">Unity 6 (6000.1.14f1) &middot; URP &middot; v2.0 개편: 리듬 미니게임 → 실험 기반 관찰, 전투/포획 → 속성 조작/수확</p>
+
+<div class="stats">
+  <div class="stat"><b>6</b><span>씬</span></div>
+  <div class="stat"><b>6</b><span>속성</span></div>
+  <div class="stat"><b>3</b><span>포탄</span></div>
+  <div class="stat"><b>6+</b><span>SO 타입</span></div>
+  <div class="stat"><b>38</b><span>스크립트</span></div>
+</div>
+
+<!-- ==================== CORE LOOP (한눈에) ==================== -->
+<h2 id="core">핵심 루프 — 한눈에</h2>
+
+<div class="flow-row">
+  <div class="flow-box fb-action">쏴본다<br><small>속성 포탄 발사</small></div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-box fb-water">반응을 본다<br><small>시각 피드백</small></div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-box fb-elec">깨닫는다<br><small>패턴 파악</small></div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-box fb-result">조합 완성<br><small>2속성 임계값</small></div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-box fb-harvest">수확<br><small>보상 획득</small></div>
+</div>
+
+<div class="card card-cyan">
+  <strong>생물의 상태를 조작하여 결과물을 추출하는 생태 퍼즐 게임.</strong><br>
+  관찰 버튼은 없다. 쏴보고, 반응 보고, 깨닫는 과정 자체가 관찰이다.<br>
+  <span style="color:var(--t2)">"읽는 게임"이 아닌 <strong style="color:var(--c)">"깨닫는 게임"</strong></span>
+</div>
+
+<nav class="toc">
+  <strong>목차</strong>
+  <ol>
+    <li><a href="#cannon">대포 &amp; 포탄</a></li>
+    <li><a href="#attr">속성 시스템</a></li>
+    <li><a href="#monster">몬스터 &amp; 상태</a></li>
+    <li><a href="#observe">관찰 설계</a></li>
+    <li><a href="#harvest">수확 시스템</a></li>
+    <li><a href="#codex">도감</a></li>
+    <li><a href="#scene">씬 구조</a></li>
+    <li><a href="#player">플레이어</a></li>
+    <li><a href="#camera">카메라</a></li>
+    <li><a href="#inven">인벤토리 &amp; 장비</a></li>
+    <li><a href="#pstat">스탯</a></li>
+    <li><a href="#map">맵 생성</a></li>
+    <li><a href="#key">키 바인딩</a></li>
+    <li><a href="#so">SO 데이터 구조</a></li>
+    <li><a href="#ui">UI 구조</a></li>
+    <li><a href="#scripts">스크립트 목록</a></li>
+    <li><a href="#mvp">MVP &amp; 향후</a></li>
+  </ol>
+</nav>
+
+<hr>
+
+<!-- ==================== 1. 대포 ==================== -->
+<h2 id="cannon">1. 대포 &amp; 포탄 시스템</h2>
+
+<p>모든 상호작용은 <strong>포탄 발사</strong>로 진행한다. 포물선 발사 + 반동 = 조준 자체가 퍼즐.</p>
+
+<div class="card-grid">
+  <div class="card" style="border-top:3px solid var(--water)">
+    <h4 style="color:var(--water)">1 — 물 포탄</h4>
+    <p>대상의 <strong>습기</strong> 증가<br><small style="color:var(--t2)">젖은 상태, 성장 촉진</small></p>
+  </div>
+  <div class="card" style="border-top:3px solid var(--fire)">
+    <h4 style="color:var(--fire)">2 — 불 포탄</h4>
+    <p>대상의 <strong>열</strong> 증가<br><small style="color:var(--t2)">건조, 경화, 분해 촉진</small></p>
+  </div>
+  <div class="card" style="border-top:3px solid var(--elec)">
+    <h4 style="color:var(--elec)">3 — 전기 포탄</h4>
+    <p>대상의 <strong>전도</strong> 증가<br><small style="color:var(--t2)">활성화, 변이 촉진</small></p>
+  </div>
+</div>
+
+<div class="card">
+  <h4>발사 메카닉</h4>
+  <table>
+    <tr><th>단계</th><th>조작</th><th>설명</th></tr>
+    <tr><td>조준</td><td>마우스 이동</td><td>방향 + 각도 결정</td></tr>
+    <tr><td>발사</td><td>좌클릭</td><td>포물선 궤적으로 발사</td></tr>
+    <tr><td>반동</td><td>자동</td><td>플레이어 위치 밀림</td></tr>
+    <tr><td>착탄</td><td>자동</td><td>명중 시 속성 적용, 빗나감 시 낭비</td></tr>
+  </table>
+</div>
+
+<hr>
+
+<!-- ==================== 2. 속성 ==================== -->
+<h2 id="attr">2. 속성 시스템</h2>
+
+<h3>6가지 속성</h3>
+<div class="card-grid">
+  <div class="card" style="text-align:center">
+    <div style="font-size:.8em;color:var(--t2);margin-bottom:8px">직접 입력 (포탄)</div>
+    <span class="attr a-water">습기</span>
+    <span class="attr a-fire">열</span>
+    <span class="attr a-elec">전도</span>
+  </div>
+  <div class="card" style="text-align:center">
+    <div style="font-size:.8em;color:var(--t2);margin-bottom:8px">파생 (2속성 조합)</div>
+    <span class="attr a-grow">생장</span>
+    <span class="attr a-struct">구조</span>
+    <span class="attr a-decay">부패</span>
+  </div>
+</div>
+
+<h3>조합 규칙 — 최대 2속성</h3>
+<div class="flow-row">
+  <div class="flow-box fb-water" style="min-width:80px">습기</div>
+  <div class="flow-arrow">+</div>
+  <div class="flow-box fb-elec" style="min-width:80px">전도</div>
+  <div class="flow-arrow">=</div>
+  <div class="flow-box fb-result" style="min-width:80px">생장</div>
+</div>
+<div class="flow-row">
+  <div class="flow-box fb-fire" style="min-width:80px">열</div>
+  <div class="flow-arrow">+</div>
+  <div class="flow-box fb-elec" style="min-width:80px">전도</div>
+  <div class="flow-arrow">=</div>
+  <div class="flow-box" style="min-width:80px;background:#1a0d2d;border:2px solid var(--struct);color:var(--struct)">구조</div>
+</div>
+<div class="flow-row">
+  <div class="flow-box fb-water" style="min-width:80px">습기</div>
+  <div class="flow-arrow">+</div>
+  <div class="flow-box fb-fire" style="min-width:80px">열</div>
+  <div class="flow-arrow">=</div>
+  <div class="flow-box fb-gray" style="min-width:80px;color:var(--decay)">부패</div>
+</div>
+
+<div class="card">
+  <p><strong>핵심:</strong> 같은 포탄이라도 몬스터 종류에 따라 반응이 <strong>완전히 다르다.</strong></p>
+</div>
+
+<hr>
+
+<!-- ==================== 3. 몬스터 ==================== -->
+<h2 id="monster">3. 몬스터 &amp; 상태 시스템</h2>
+
+<h3>상태 변화 흐름</h3>
+<div class="flow-row">
+  <div class="flow-box fb-action">포탄 명중</div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-box fb-water">속성값 증가</div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-box fb-elec">임계값 도달<br><small>1차 반응</small></div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-box fb-result">2속성 조합<br><small>완성 상태!</small></div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-box fb-harvest">수확 가능</div>
+</div>
+
+<h3>예시: 이끼 두꺼비 — 단일 속성 반응</h3>
+<table>
+  <tr>
+    <th>속성</th><th>임계값</th><th>반응</th><th>외형</th><th>행동</th>
+  </tr>
+  <tr>
+    <td><span class="attr a-water">습기</span></td><td>30</td><td>축축해짐</td><td>물방울 맺힘</td><td>이동 둔화 50%</td>
+  </tr>
+  <tr>
+    <td><span class="attr a-water">습기</span></td><td>70</td><td>포화</td><td>몸 부풀어오름</td><td>이동 정지</td>
+  </tr>
+  <tr>
+    <td><span class="attr a-fire">열</span></td><td>30</td><td>건조</td><td>이끼 갈변</td><td>이동 가속 30%</td>
+  </tr>
+  <tr>
+    <td><span class="attr a-fire">열</span></td><td>70</td><td>과열</td><td>연기 파티클</td><td>랜덤 도주</td>
+  </tr>
+  <tr>
+    <td><span class="attr a-elec">전도</span></td><td>30</td><td>대전</td><td>정전기 스파크</td><td>1초 경직</td>
+  </tr>
+  <tr>
+    <td><span class="attr a-elec">전도</span></td><td>70</td><td>과전류</td><td>스파크 이펙트</td><td>3초 마비</td>
+  </tr>
+</table>
+
+<h3>예시: 이끼 두꺼비 — 2속성 조합 → 완성</h3>
+<table>
+  <tr><th>조합</th><th>필요</th><th>완성 상태</th><th>수확 보상</th></tr>
+  <tr>
+    <td><span class="attr a-water">습기</span> + <span class="attr a-elec">전도</span></td>
+    <td>각 50+</td><td style="color:var(--g);font-weight:700">발아</td><td>이끼 새싹 x2, 생장 포자 x1</td>
+  </tr>
+  <tr>
+    <td><span class="attr a-fire">열</span> + <span class="attr a-elec">전도</span></td>
+    <td>각 50+</td><td style="color:var(--struct);font-weight:700">결정화</td><td>이끼 결정 x1, 전도체 x1</td>
+  </tr>
+  <tr>
+    <td><span class="attr a-water">습기</span> + <span class="attr a-fire">열</span></td>
+    <td>각 50+</td><td style="color:var(--decay);font-weight:700">발효</td><td>발효 이끼 x3, 부패액 x1</td>
+  </tr>
+</table>
+
+<h3>몬스터 종류별 반응 차이</h3>
+<div class="cmp-grid">
+  <div class="cmp-h">포탄</div>
+  <div class="cmp-h">이끼 두꺼비</div>
+  <div class="cmp-h">돌 게</div>
+  <div class="cmp-h">불꽃 나방</div>
+
+  <div><span class="attr a-water">물</span></div>
+  <div>축축 (둔화) → 포화 (정지)</div>
+  <div>녹 발생 (방어↓) → 껍질 약화</div>
+  <div>불꽃 소멸 (기절) → 무력화</div>
+
+  <div><span class="attr a-fire">불</span></div>
+  <div>건조 (가속) → 과열 (도주)</div>
+  <div>달궈짐 (느려짐) → 용해</div>
+  <div>활성화 (강화) → 폭주</div>
+
+  <div><span class="attr a-elec">전기</span></div>
+  <div>대전 (경직) → 과전류 (마비)</div>
+  <div>자화 (흡착) → 전자기화</div>
+  <div>충전 (발광) → 방전 폭발</div>
+
+  <div><span class="attr a-water">물</span>+<span class="attr a-fire">불</span></div>
+  <div style="color:var(--decay)">발효</div>
+  <div style="color:var(--decay)">증기 약화</div>
+  <div style="color:var(--decay)">소멸 (재)</div>
+
+  <div><span class="attr a-water">물</span>+<span class="attr a-elec">전기</span></div>
+  <div style="color:var(--grow)">발아</div>
+  <div style="color:var(--grow)">전해 부식</div>
+  <div style="color:var(--grow)">감전 변이</div>
+
+  <div><span class="attr a-fire">불</span>+<span class="attr a-elec">전기</span></div>
+  <div style="color:var(--struct)">결정화</div>
+  <div style="color:var(--struct)">제련</div>
+  <div style="color:var(--struct)">플라즈마화</div>
+</div>
+
+<hr>
+
+<!-- ==================== 4. 관찰 ==================== -->
+<h2 id="observe">4. 관찰 설계</h2>
+
+<div class="card card-cyan">
+  <h4 style="color:var(--c)">관찰 = 버튼이 아니라 과정</h4>
+  <p>관찰탄 같은 전용 기능은 없다. 유저가 포탄을 쏴보고, 반응을 보고, 패턴을 깨닫는 <strong>과정 자체가 관찰</strong>이다.</p>
+</div>
+
+<div class="card-grid">
+  <div class="card">
+    <h4>1단계: 시각 힌트 (수동)</h4>
+    <p>아무것도 안 해도 보이는 정보</p>
+    <ul>
+      <li>버섯 토끼: 몸이 젖어있음 → <em>"물 관련?"</em></li>
+      <li>돌 게: 금속성 광택 → <em>"전기 관련?"</em></li>
+      <li>불꽃 나방: 불꽃 날갯짓 → <em>"불 관련?"</em></li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>2단계: 반응 피드백 (실험)</h4>
+    <p>포탄 명중 시 즉각적 피드백</p>
+    <ul>
+      <li>외형 변화 (색, 파티클)</li>
+      <li>텍스트 팝업 <code>"축축해졌다"</code></li>
+      <li>행동 변화 (둔화, 도주 등)</li>
+    </ul>
+  </div>
+  <div class="card" style="border:2px solid var(--c)">
+    <h4 style="color:var(--c)">3단계: 미완성 힌트 (핵심!)</h4>
+    <p>더 시도하게 만드는 피드백</p>
+    <ul>
+      <li>단일 반응만 → <code>"뭔가 더 반응할 것 같다..."</code></li>
+      <li>2속성 중 1개만 → 미묘한 떨림/빛남</li>
+      <li>둘 다 달성 → 확실한 변신 이펙트!</li>
+    </ul>
+  </div>
+</div>
+
+<hr>
+
+<!-- ==================== 5. 수확 ==================== -->
+<h2 id="harvest">5. 수확 시스템</h2>
+
+<div class="card card-orange">
+  <strong>죽이지 않고, 상태를 완성한 후 수확하여 보상을 획득한다.</strong>
+</div>
+
+<div class="flow-row">
+  <div class="flow-box fb-action">속성 조작</div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-box fb-result">완성 이펙트<br><small>"수확 가능!"</small></div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-box fb-harvest">수확 조작</div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-box fb-gray">보상 드랍<br><small>상태별 다른 보상</small></div>
+</div>
+
+<div class="card">
+  <ul>
+    <li>같은 몬스터라도 <strong>어떤 완성 상태</strong>로 수확하냐에 따라 보상이 다름</li>
+    <li>미완성 상태에서 수확 → 보상 없음 or 저급 보상</li>
+    <li>수확 후 몬스터 속성 초기화 (또는 소멸 → 재생성)</li>
+  </ul>
+</div>
+
+<hr>
+
+<!-- ==================== 6. 도감 ==================== -->
+<h2 id="codex">6. 도감 — 점진적 기록</h2>
+
+<div class="flow-row">
+  <div class="flow-box fb-gray">???<br><small>Undiscovered</small></div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-box fb-gray" style="color:var(--t)">실루엣<br><small>Encountered</small></div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-box fb-water">반응 기록 중<br><small>Researching</small></div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-box fb-result">전체 공개<br><small>Analyzed</small></div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-box fb-harvest">마스터<br><small>Mastered</small></div>
+</div>
+
+<div class="card">
+  <p><strong>관찰탄 없이 점진적 기록.</strong> 포탄을 쏴볼수록 도감이 채워진다.</p>
+  <table>
+    <tr><th>유저 행동</th><th>도감에 기록</th></tr>
+    <tr><td>최초 조우</td><td>이름 + 실루엣</td></tr>
+    <tr><td>물 포탄 명중</td><td>"습기 반응: 축축해짐" 기록</td></tr>
+    <tr><td>불 포탄 명중</td><td>"열 반응: 건조" 기록</td></tr>
+    <tr><td>모든 반응 확인</td><td>전체 반응 테이블 공개</td></tr>
+    <tr><td>모든 조합 수확</td><td>마스터 달성</td></tr>
+  </table>
+</div>
+
+<hr>
+
+<!-- ==================== 7. 씬 ==================== -->
+<h2 id="scene">7. 씬 구조</h2>
+
+<table>
+  <tr><th>씬</th><th>역할</th><th>카메라</th><th>상태</th></tr>
+  <tr><td><code>1.LocalScene</code></td><td>로컬 필드 (자원, 크래프팅)</td><td>TopView</td><td><span class="t t-ok">구현</span></td></tr>
+  <tr><td><code>2.BattleScene</code></td><td>탐험 (몬스터 관찰/수확)</td><td>ShoulderView</td><td><span class="t t-ok">구현</span></td></tr>
+  <tr><td><code>3.Load</code></td><td>로딩 경유</td><td>—</td><td><span class="t t-ok">구현</span></td></tr>
+</table>
+
+<div class="flow-row">
+  <div class="flow-box fb-action">LocalScene</div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-box fb-gray">Load</div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-box fb-result">BattleScene</div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-box fb-gray">Load</div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-box fb-action">LocalScene</div>
+</div>
+
+<hr>
+
+<!-- ==================== 8. 플레이어 ==================== -->
+<h2 id="player">8. 플레이어</h2>
+
+<div class="card-grid">
+  <div class="card">
+    <h4>이동 (PlayerMoveCC)</h4>
+    <ul>
+      <li>CharacterController, WASD, 카메라 기준</li>
+      <li>LeftShift: 걷기 (x0.4)</li>
+      <li>중력 -20, 싱글톤, DontDestroyOnLoad</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>배틀씬 액션 (v2.0)</h4>
+    <ul>
+      <li>마우스: 대포 조준</li>
+      <li>좌클릭: 대포 발사</li>
+      <li>1/2/3: 물/불/전기 포탄 전환</li>
+    </ul>
+  </div>
+</div>
+
+<hr>
+
+<!-- ==================== 9. 카메라 ==================== -->
+<h2 id="camera">9. 카메라</h2>
+
+<div class="card-grid">
+  <div class="card">
+    <h4>TopView (LocalScene)</h4>
+    <p>오프셋(0,10,-8) / Q,E: 90도 / 스크롤: 줌 5~15 / Orthographic</p>
+  </div>
+  <div class="card">
+    <h4>ShoulderView (BattleScene)</h4>
+    <p>오프셋(0.5,1.5,-3) / 마우스: yaw/pitch / 스크롤: 2~8 / ESC: 커서 잠금</p>
+  </div>
+</div>
+
+<hr>
+
+<!-- ==================== 10. 인벤 ==================== -->
+<h2 id="inven">10. 인벤토리 &amp; 장비</h2>
+
+<div class="card-grid">
+  <div class="card">
+    <h4>인벤토리 15칸</h4>
+    <p>AddItem(스택 우선→빈칸), SwapSlots, 드래그앤드롭</p>
+  </div>
+  <div class="card">
+    <h4>장비 3슬롯</h4>
+    <p>Weapon / Head / Body. Equip/Unequip.</p>
+  </div>
+</div>
+<p>사망 시 전체 ClearAll → LocalScene 복귀 (로그라이크)</p>
+
+<hr>
+
+<!-- ==================== 11. 스탯 ==================== -->
+<h2 id="pstat">11. 스탯</h2>
+
+<div class="card">
+  <table>
+    <tr><th>스탯</th><th>기본</th><th>공식</th></tr>
+    <tr><td>MaxHP</td><td>100</td><td rowspan="4"><code>(base + SUM Flat) x (1 + SUM % / 100)</code></td></tr>
+    <tr><td>Attack</td><td>10</td></tr>
+    <tr><td>Defense</td><td>5</td></tr>
+    <tr><td>MoveSpeed</td><td>5</td></tr>
+  </table>
+  <p>피해: <code>max(amount - Defense, 1)</code> / 장비 변경 시 자동 재계산</p>
+</div>
+
+<hr>
+
+<!-- ==================== 12. 맵 ==================== -->
+<h2 id="map">12. 맵 생성</h2>
+
+<div class="card">
+  <p>프로시저럴 원형 맵. Local 반지름 40, Battle 반지름 80.</p>
+  <table>
+    <tr><th>요소</th><th>수량</th><th>스케일</th></tr>
+    <tr><td>나무</td><td>60</td><td>0.8~1.5</td></tr>
+    <tr><td>바위</td><td>25</td><td>0.5~1.3</td></tr>
+    <tr><td>풀</td><td>80</td><td>0.7~1.2</td></tr>
+    <tr><td>덤불</td><td>20</td><td>0.7~1.3</td></tr>
+    <tr><td>월드 아이템</td><td>10</td><td>—</td></tr>
+    <tr><td>몬스터 (배틀)</td><td>5</td><td>72도 간격</td></tr>
+  </table>
+</div>
+
+<hr>
+
+<!-- ==================== 13. 키 바인딩 ==================== -->
+<h2 id="key">13. 키 바인딩</h2>
+
+<div class="card-grid">
+  <div class="card">
+    <h4>공통</h4>
+    <table>
+      <tr><td><code>WASD</code></td><td>이동</td></tr>
+      <tr><td><code>Shift</code></td><td>걷기</td></tr>
+      <tr><td><code>Tab</code></td><td>인벤토리</td></tr>
+      <tr><td><code>F</code></td><td>아이템 줍기</td></tr>
+      <tr><td><code>스크롤</code></td><td>줌</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>LocalScene</h4>
+    <table>
+      <tr><td><code>Q / E</code></td><td>카메라 회전 90도</td></tr>
+    </table>
+    <h4>BattleScene</h4>
+    <table>
+      <tr><td><code>좌클릭</code></td><td>대포 발사</td></tr>
+      <tr><td><code>1 / 2 / 3</code></td><td>물 / 불 / 전기</td></tr>
+      <tr><td><code>ESC</code></td><td>커서 잠금</td></tr>
+      <tr><td><code>마우스</code></td><td>카메라 + 조준</td></tr>
+    </table>
+  </div>
+</div>
+
+<hr>
+
+<!-- ==================== 14. SO 구조 ==================== -->
+<h2 id="so">14. 데이터 구조 (ScriptableObject)</h2>
+
+<div class="card card-accent">
+<h4>MonsterData — v2.0</h4>
+<pre>[기본]  monsterName, icon, maxHP(50), moveSpeed(2)
+[속성 초기값]  initMoisture(0), initHeat(0), initConductivity(0)
+
+[속성 반응 테이블]  AttributeReaction[]
+  attribute (6종) / threshold / reactionName / effect / effectValue
+
+[2속성 조합 테이블]  AttributeCombination[]
+  attr1 + attr2 / threshold1 + threshold2 / completionStateName / harvestDrops[]
+
+[AI]  wanderRadius(10), wanderInterval(4), fleeSpeed(5)</pre>
+</div>
+
+<div class="card-grid">
+  <div class="card">
+    <h4>ItemData</h4>
+    <pre>itemName, icon, itemType
+description, maxStack</pre>
+  </div>
+  <div class="card">
+    <h4>EquipmentData</h4>
+    <pre>equipSlot (Weapon/Head/Body)
+StatModifier[] (Flat/Percent)</pre>
+  </div>
+  <div class="card">
+    <h4>Sprite8DirSet</h4>
+    <pre>Idle/Walk x 8방향
+GetFrames(state, dir)</pre>
+  </div>
+</div>
+
+<hr>
+
+<!-- ==================== 15. UI ==================== -->
+<h2 id="ui">15. UI 구조</h2>
+
+<div class="card">
+<pre>Canvas
+ +-- InventoryRoot (Tab 토글)
+ |   +-- EquipmentArea: Weapon / Head / Body
+ |   +-- GridArea: Slot x 15
+ +-- ItemTooltip
+ +-- DraggedItem
+
+[배틀씬 v2.0]
+ +-- CannonHUD: 포탄 선택 (1/2/3), 레티클, 반동 게이지
+ +-- ReactionFeedback: 반응 텍스트 팝업, 미완성 힌트
+ +-- CompletionEffect: 완성 이펙트, "수확 가능!"
+ +-- HarvestNotification: 드랍 표시</pre>
+</div>
+
+<hr>
+
+<!-- ==================== 16. 스크립트 ==================== -->
+<h2 id="scripts">16. 스크립트 목록</h2>
+
+<h3>유지</h3>
+<table>
+  <tr><th>분류</th><th>파일</th></tr>
+  <tr><td>Manager</td><td>GameLoopManager, Loading, UIManager, BattleFieldUIManager</td></tr>
+  <tr><td>Player</td><td>PlayerMoveCC, PlayerStats, CameraFollow</td></tr>
+  <tr><td>Entity</td><td>Sprite8Dir, Sprite8DirAnimator, Billboard, Damageable, DropTable</td></tr>
+  <tr><td>Monster</td><td>MonsterData <span class="t t-new">개편됨</span>, CreatureCodex <span class="t t-new">개편됨</span></td></tr>
+  <tr><td>Inventory</td><td>ItemData, EquipmentData, StatModifier, ItemStack, Inventory, Equipment, InventoryManager, InventoryTestHelper, WorldItem, SlotUI, InventoryUI, EquipmentUI, DraggedItemUI, ItemTooltipUI</td></tr>
+  <tr><td>기타</td><td>SimpleMapGenerator, SettingController, Sprite8DirSet</td></tr>
+  <tr><td>Editor</td><td>NaturePrefabCreator, InventoryUICreator, TestItemCreator</td></tr>
+</table>
+
+<h3>제거 대상 (v1.0)</h3>
+<table>
+  <tr><th>파일</th><th>이유</th><th>대체</th></tr>
+  <tr><td><span class="t t-del">PlayerActions</span></td><td>Q/W/E/R/F 제거</td><td>CannonController</td></tr>
+  <tr><td><span class="t t-del">PlayerAttack</span></td><td>빈 스텁</td><td>—</td></tr>
+  <tr><td><span class="t t-del">LockOnTarget</span></td><td>락온 제거</td><td>대포 조준</td></tr>
+  <tr><td><span class="t t-del">MonsterAI</span></td><td>상태머신 제거</td><td>MonsterBehavior</td></tr>
+  <tr><td><span class="t t-del">ObserveRhythmUI</span></td><td>리듬 제거</td><td>ReactionFeedback</td></tr>
+  <tr><td><span class="t t-del">RhythmNote</span></td><td>리듬 제거</td><td>—</td></tr>
+  <tr><td><span class="t t-del">Trap</span></td><td>덫 제거</td><td>속성 시스템</td></tr>
+</table>
+
+<h3>신규 (v2.0)</h3>
+<table>
+  <tr><th>파일</th><th>역할</th><th>상태</th></tr>
+  <tr><td>CannonController</td><td>대포 조준/발사/반동/전환</td><td><span class="t t-no">미구현</span></td></tr>
+  <tr><td>Projectile</td><td>포물선 물리 + 착탄</td><td><span class="t t-no">미구현</span></td></tr>
+  <tr><td>ProjectileData</td><td>포탄 종류별 SO</td><td><span class="t t-no">미구현</span></td></tr>
+  <tr><td>MonsterAttributeState</td><td>런타임 속성 관리</td><td><span class="t t-no">미구현</span></td></tr>
+  <tr><td>MonsterBehavior</td><td>간소화 AI (배회+반응)</td><td><span class="t t-no">미구현</span></td></tr>
+  <tr><td>HarvestSystem</td><td>수확 판정 + 드랍</td><td><span class="t t-no">미구현</span></td></tr>
+  <tr><td>ReactionFeedback</td><td>반응 팝업 + 힌트</td><td><span class="t t-no">미구현</span></td></tr>
+  <tr><td>CannonHUD</td><td>포탄 UI + 레티클</td><td><span class="t t-no">미구현</span></td></tr>
+</table>
+
+<hr>
+
+<!-- ==================== 17. MVP ==================== -->
+<h2 id="mvp">17. MVP &amp; 향후 계획</h2>
+
+<div class="card" style="border:2px solid var(--c)">
+  <h4 style="color:var(--c)">MVP 목표</h4>
+  <div class="flow-row" style="margin:12px 0">
+    <div class="flow-box fb-action">몬스터 1종</div>
+    <div class="flow-arrow">+</div>
+    <div class="flow-box fb-water">속성 3개</div>
+    <div class="flow-arrow">+</div>
+    <div class="flow-box fb-result">상태 3개</div>
+    <div class="flow-arrow">+</div>
+    <div class="flow-box fb-harvest">수확</div>
+  </div>
+  <ol>
+    <li>대포 발사 (포물선 + 착탄) → CannonController + Projectile</li>
+    <li>포탄 3종 (물/불/전기) → ProjectileData</li>
+    <li>이끼 두꺼비 (반응 6개 + 조합 3개) → MonsterAttributeState</li>
+    <li>반응 피드백 (시각 힌트 + 텍스트) → ReactionFeedback</li>
+    <li>수확 (완성 → 드랍) → HarvestSystem</li>
+    <li>간소화 AI (배회 + 반응) → MonsterBehavior</li>
+    <li>도감 점진적 기록 → CreatureCodex 확장</li>
+  </ol>
+</div>
+
+<div class="card-grid">
+  <div class="card"><h4><span class="t t-no">미구현</span> 로컬 세이브</h4><p>JSON 인벤/스탯/도감</p></div>
+  <div class="card"><h4><span class="t t-no">미구현</span> 크래프팅</h4><p>로컬씬 서브 콘텐츠</p></div>
+  <div class="card"><h4><span class="t t-no">미구현</span> Photon 코옵</h4><p>2~4인 P2P + 클라우드</p></div>
+  <div class="card"><h4><span class="t t-wip">일부</span> GameStep</h4><p>Select/Enter/Return 미구현</p></div>
+</div>
+
+<hr>
+<p style="text-align:center;color:var(--t2);font-size:.9em">
+silver-octo-fiesta &mdash; 기획서 v2.0 &mdash; 2026.03.20
+</p>
+
+</div>
+</body>
+</html>
