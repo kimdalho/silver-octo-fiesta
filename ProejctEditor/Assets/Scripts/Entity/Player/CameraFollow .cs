@@ -40,6 +40,11 @@ public class CameraFollow : MonoBehaviour
     private float transitionT = 1f;
     private const float TransitionDuration = 0.5f;
 
+    // 카메라 흔들림
+    private float shakeTimer;
+    private float shakeIntensity;
+    private float shakeDamping = 5f;
+
     void Awake()
     {
         if (instance != null && instance != this)
@@ -132,6 +137,25 @@ public class CameraFollow : MonoBehaviour
             transform.position = goalPos;
             transform.rotation = goalRot;
         }
+
+        // 카메라 흔들림 적용
+        if (shakeTimer > 0f)
+        {
+            shakeTimer -= Time.deltaTime;
+            float currentIntensity = shakeIntensity * (shakeTimer > 0f ? 1f : 0f);
+            currentIntensity = Mathf.Lerp(0f, currentIntensity, shakeTimer * shakeDamping);
+            Vector3 shakeOffset = Random.insideUnitSphere * currentIntensity;
+            transform.position += shakeOffset;
+        }
+    }
+
+    /// <summary>
+    /// 카메라 흔들림. 총통 발사 시 호출.
+    /// </summary>
+    public void Shake(float intensity = 0.15f, float duration = 0.3f)
+    {
+        shakeIntensity = intensity;
+        shakeTimer = duration;
     }
 
     private void ComputeTopView(out Vector3 pos, out Quaternion rot)

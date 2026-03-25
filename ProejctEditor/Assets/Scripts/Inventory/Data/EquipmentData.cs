@@ -12,6 +12,7 @@ public class EquipmentData : ItemData
 {
     public EquipSlot equipSlot;
     public StatModifier[] statModifiers;
+    public GameObject modelPrefab;
 
     private void OnValidate()
     {

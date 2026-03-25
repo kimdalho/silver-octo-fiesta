@@ -66,6 +66,20 @@ public class Inventory
         OnSlotChanged?.Invoke(b);
     }
 
+    /// <summary>
+    /// 특정 슬롯에서 아이템 1개 소모. 포탄 발사 등에 사용.
+    /// </summary>
+    public bool ConsumeOne(int index)
+    {
+        if (index < 0 || index >= Size || slots[index] == null) return false;
+
+        slots[index].count--;
+        if (slots[index].count <= 0)
+            slots[index] = null;
+        OnSlotChanged?.Invoke(index);
+        return true;
+    }
+
     private int FindEmptySlot()
     {
         for (int i = 0; i < Size; i++)
