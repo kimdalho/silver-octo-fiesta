@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 
-public class SlotUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler, IPointerEnterHandler, IPointerExitHandler
+public class SlotUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     public Image iconImage;
     public TextMeshProUGUI countText;
@@ -105,6 +105,20 @@ public class SlotUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
             }
         }
         // 경우 4: 장비 → 장비 (같은 슬롯이면 무시)
+    }
+
+    // --- 배치 (우클릭) ---
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData.button != PointerEventData.InputButton.Right) return;
+        if (currentStack == null || isEquipmentSlot) return;
+        if (DraggedItemUI.instance != null && DraggedItemUI.instance.IsDragging) return;
+
+        var placeable = currentStack.data as PlaceableData;
+        if (placeable == null) return;
+
+        PlacementSystem.instance?.StartPlacement(placeable, slotIndex);
     }
 
     // --- Tooltip ---

@@ -34,42 +34,65 @@ public class SimpleMapGenerator : MonoBehaviour
     public ItemData[] spawnableItems;
     public int itemSpawnCount = 10;
 
-    private GameObject mapRoot;
+    // 로컬맵은 최초 1회만 생성, 배틀맵은 매번 재생성
+    private GameObject localMapRoot;
+    private GameObject battleMapRoot;
+    private bool localGenerated = false;
 
     private float currentRadius;
 
     public void Generate()
     {
-        Clear();
-
         bool isBattle = GameLoopManager.instance != null
             && GameLoopManager.instance.CurrentStep != GameStep.Local;
 
-        currentRadius = isBattle ? battleMapRadius : mapRadius;
+        if (!isBattle)
+        {
+            // 로컬맵: 이미 생성된 경우 재생성하지 않음
+            if (localGenerated && localMapRoot != null) return;
 
-        mapRoot = new GameObject("MapRoot");
-        CreateGround();
-        SpawnGroup("Trees", treePrefab, treeCount, 3f, treeMinScale, treeMaxScale);
-        SpawnGroup("Rocks", rockPrefab, rockCount, 2f, rockMinScale, rockMaxScale);
-        SpawnGroup("Grass", grassPrefab, grassCount, 0.5f, 0.7f, 1.2f);
-        SpawnGroup("Bushes", bushPrefab, bushCount, 2f, 0.7f, 1.3f);
-        SpawnDroppedItems();
+            currentRadius = mapRadius;
+            localMapRoot = new GameObject("LocalMapRoot");
+            DontDestroyOnLoad(localMapRoot);
+            GenerateInto(localMapRoot, isBattle: false);
+            localGenerated = true;
+        }
+        else
+        {
+            // 배틀맵: 매번 재생성
+            if (battleMapRoot != null) Destroy(battleMapRoot);
+            currentRadius = battleMapRadius;
+            battleMapRoot = new GameObject("BattleMapRoot");
+            GenerateInto(battleMapRoot, isBattle: true);
+        }
+    }
 
-        if (isBattle)
-            SpawnMonsters();
+    private void GenerateInto(GameObject root, bool isBattle)
+    {
+        CreateGround(root);
+        SpawnGroup("Trees",  treePrefab,  treeCount,  3f,   treeMinScale, treeMaxScale, root);
+        SpawnGroup("Rocks",  rockPrefab,  rockCount,  2f,   rockMinScale, rockMaxScale, root);
+        SpawnGroup("Grass",  grassPrefab, grassCount, 0.5f, 0.7f, 1.2f,  root);
+        SpawnGroup("Bushes", bushPrefab,  bushCount,  2f,   0.7f, 1.3f,  root);
+        SpawnDroppedItems(root);
+        if (isBattle) SpawnMonsters(root);
     }
 
     public void Clear()
     {
-        if (mapRoot != null)
-            Destroy(mapRoot);
+        // 배틀맵만 파괴. 로컬맵은 영구 보존.
+        if (battleMapRoot != null)
+        {
+            Destroy(battleMapRoot);
+            battleMapRoot = null;
+        }
     }
 
-    void CreateGround()
+    void CreateGround(GameObject root)
     {
         var ground = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         ground.name = "Ground";
-        ground.transform.SetParent(mapRoot.transform);
+        ground.transform.SetParent(root.transform);
         ground.transform.position = Vector3.zero;
         ground.transform.localScale = new Vector3(currentRadius * 2f, 0.1f, currentRadius * 2f);
 
@@ -83,10 +106,10 @@ public class SimpleMapGenerator : MonoBehaviour
         ground.GetComponent<Renderer>().material = mat;
     }
 
-    void SpawnGroup(string groupName, GameObject prefab, int count, float minDist, float minScale, float maxScale)
+    void SpawnGroup(string groupName, GameObject prefab, int count, float minDist, float minScale, float maxScale, GameObject root)
     {
         var parent = new GameObject(groupName).transform;
-        parent.SetParent(mapRoot.transform);
+        parent.SetParent(root.transform);
 
         for (int i = 0; i < count; i++)
         {
@@ -137,12 +160,12 @@ public class SimpleMapGenerator : MonoBehaviour
         return go;
     }
 
-    void SpawnDroppedItems()
+    void SpawnDroppedItems(GameObject root)
     {
         if (spawnableItems == null || spawnableItems.Length == 0) return;
 
         var parent = new GameObject("DroppedItems").transform;
-        parent.SetParent(mapRoot.transform);
+        parent.SetParent(root.transform);
 
         for (int i = 0; i < itemSpawnCount; i++)
         {
@@ -153,12 +176,12 @@ public class SimpleMapGenerator : MonoBehaviour
         }
     }
 
-    void SpawnMonsters()
+    void SpawnMonsters(GameObject root)
     {
         if (spawnableMonsters == null || spawnableMonsters.Length == 0) return;
 
         var parent = new GameObject("Monsters").transform;
-        parent.SetParent(mapRoot.transform);
+        parent.SetParent(root.transform);
 
         float sectorAngle = 360f / monsterCount;
 
@@ -184,9 +207,9 @@ public class SimpleMapGenerator : MonoBehaviour
             go.name = $"Monster_{data.name}_{i}";
             go.transform.position = new Vector3(pos.x, 0f, pos.y);
 
-            var ai = go.GetComponent<MonsterAI>();
-            if (ai != null)
-                ai.data = data;
+            // TODO: MonsterBehavior 구현 후 data 연결
+            // var behavior = go.GetComponent<MonsterBehavior>();
+            // if (behavior != null) behavior.data = data;
         }
     }
 
@@ -214,7 +237,7 @@ public class SimpleMapGenerator : MonoBehaviour
 
         go.AddComponent<Damageable>();
         go.AddComponent<DropTable>();
-        go.AddComponent<MonsterAI>();
+        // TODO: go.AddComponent<MonsterBehavior>();
 
         return go;
     }

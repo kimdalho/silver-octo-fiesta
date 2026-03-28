@@ -9,6 +9,7 @@ public class DraggedItemUI : MonoBehaviour
     public CanvasGroup canvasGroup;
 
     [HideInInspector] public SlotUI sourceSlot;
+    public bool IsDragging => gameObject.activeSelf;
 
     void Awake()
     {

@@ -142,6 +142,20 @@ public class GameLoopManager : MonoBehaviour
         SpawnPlayer(Vector3.zero);
     }
 
+    private void Update()
+    {
+        // 로컬씬에서 C 키 → 맨손 제작 UI 열기/닫기
+        if (CurrentStep == GameStep.Local && Input.GetKeyDown(KeyCode.C))
+        {
+            if (CraftingUI.instance == null) return;
+
+            if (CraftingUI.instance.panel != null && CraftingUI.instance.panel.activeSelf)
+                CraftingUI.instance.Close();
+            else
+                CraftingUI.instance.Open(CraftingStationType.Hand);
+        }
+    }
+
     public void SpawnPlayer(Vector3 position)
     {
         if (player != null)
@@ -169,36 +183,12 @@ public class GameLoopManager : MonoBehaviour
 
     private void SetupBattleComponents()
     {
-        if (player == null) return;
-
-        // PlayerActions
-        if (player.GetComponent<PlayerActions>() == null)
-            player.gameObject.AddComponent<PlayerActions>();
-
-        // LockOnTarget
-        if (player.GetComponent<LockOnTarget>() == null)
-            player.gameObject.AddComponent<LockOnTarget>();
-
-        // ObserveRhythmUI (씬에 없으면 생성)
-        if (ObserveRhythmUI.instance == null)
-        {
-            GameObject rhythmObj = new GameObject("ObserveRhythmUI");
-            rhythmObj.AddComponent<ObserveRhythmUI>();
-        }
+        // v2.0: CannonController는 플레이어 프리팹에 직접 부착
     }
 
     private void CleanupBattleComponents()
     {
-        if (player == null) return;
-
-        var pa = player.GetComponent<PlayerActions>();
-        if (pa != null) Destroy(pa);
-
-        var lot = player.GetComponent<LockOnTarget>();
-        if (lot != null) Destroy(lot);
-
-        if (ObserveRhythmUI.instance != null)
-            Destroy(ObserveRhythmUI.instance.gameObject);
+        // v2.0: 정리할 동적 컴포넌트 없음
     }
 
     public void LoadBattleField()

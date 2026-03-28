@@ -1,17 +1,6 @@
 using System;
 using UnityEngine;
 
-// ── 속성 타입 ──
-public enum AttributeType
-{
-    Moisture,       // 습기 (물 포탄)
-    Heat,           // 열   (불 포탄)
-    Conductivity,   // 전도 (전기 포탄)
-    Growth,         // 생장 (파생: 습기+전도)
-    Structure,      // 구조 (파생: 열+전도)
-    Decay           // 부패 (파생: 습기+열)
-}
-
 // ── 반응 효과 ──
 public enum ReactionEffect
 {
