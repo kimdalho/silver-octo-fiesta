@@ -58,8 +58,7 @@ public class PlacementSystem : MonoBehaviour
         DisableGhostColliders(ghost);
         ApplyGhostMaterial(ghost);
 
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        CameraFollow.instance?.SetCursorLocked(false);
     }
 
     void Update()
@@ -102,6 +101,7 @@ public class PlacementSystem : MonoBehaviour
         Destroy(ghost);
         ghost = null;
         isPlacing = false;
+        CameraFollow.instance?.SetCursorLocked(true);
 
         GameObject placed = Instantiate(currentData.placementPrefab, position, Quaternion.identity);
         placed.transform.SetParent(placedObjectsContainer);
@@ -116,6 +116,7 @@ public class PlacementSystem : MonoBehaviour
         ghost = null;
         isPlacing = false;
         currentData = null;
+        CameraFollow.instance?.SetCursorLocked(true);
     }
 
     Vector3 SnapToGrid(Vector3 worldPos)

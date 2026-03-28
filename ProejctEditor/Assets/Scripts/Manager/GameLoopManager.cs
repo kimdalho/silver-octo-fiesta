@@ -72,15 +72,6 @@ public class GameLoopManager : MonoBehaviour
         if (PlayerStats.instance != null && PlayerStats.instance.isDead)
             PlayerStats.instance.Respawn();
 
-        // 씬별 카메라 모드 전환
-        if (CameraFollow.instance != null)
-        {
-            if (scene.name == "2.BattleScene")
-                CameraFollow.instance.SetMode(CameraMode.ShoulderView);
-            else
-                CameraFollow.instance.SetMode(CameraMode.TopView);
-        }
-
         // 배틀씬 전용 컴포넌트 셋업
         if (scene.name == "2.BattleScene")
             SetupBattleComponents();
