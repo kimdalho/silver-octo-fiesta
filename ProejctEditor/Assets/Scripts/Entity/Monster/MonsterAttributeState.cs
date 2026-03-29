@@ -133,8 +133,7 @@ public class MonsterAttributeState : MonoBehaviour
         if (effect == ReactionEffect.Stun || effect == ReactionEffect.Paralyze)
             effectTimer = value;
 
-        // MonsterBehavior 구현 후 아래 연결
-        // GetComponent<MonsterBehavior>()?.OnReactionApplied(effect, value);
+        // MonsterBehavior는 CurrentEffect를 매 프레임 폴링 → 별도 호출 불필요
     }
 
     void Update()

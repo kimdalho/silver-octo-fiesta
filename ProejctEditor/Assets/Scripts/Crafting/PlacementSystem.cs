@@ -68,6 +68,7 @@ public class PlacementSystem : MonoBehaviour
         ghost = Instantiate(data.placementPrefab);
         DisableGhostColliders(ghost);
         ApplyGhostMaterial(ghost);
+        AddFootprintIndicator(ghost, data.gridSize);
 
         CameraFollow.instance?.SetCursorLocked(false);
     }
@@ -79,7 +80,7 @@ public class PlacementSystem : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hit, 200f, groundLayer))
         {
-            Vector3 snapped = SnapToGrid(hit.point);
+            Vector3 snapped = SnapToGrid(hit.point, currentData.gridSize);
             snapped.y = hit.point.y + currentData.placementY;
             ghost.transform.position = snapped;
 
@@ -208,11 +209,45 @@ public class PlacementSystem : MonoBehaviour
 
     public bool IsPlacing => isPlacing;
 
-    Vector3 SnapToGrid(Vector3 worldPos)
+    /// <summary>
+    /// 오브젝트 크기를 고려한 그리드 스냅.
+    /// 짝수 크기(2x2 등)는 타일 코너에, 홀수 크기(1x1, 3x3)는 타일 중심에 정렬.
+    /// </summary>
+    Vector3 SnapToGrid(Vector3 worldPos, Vector2Int objSize)
     {
-        float x = Mathf.Round(worldPos.x / gridSize) * gridSize;
-        float z = Mathf.Round(worldPos.z / gridSize) * gridSize;
+        float halfOffsetX = (objSize.x % 2 == 0) ? gridSize * 0.5f : 0f;
+        float halfOffsetZ = (objSize.y % 2 == 0) ? gridSize * 0.5f : 0f;
+
+        float x = Mathf.Round((worldPos.x - halfOffsetX) / gridSize) * gridSize + halfOffsetX;
+        float z = Mathf.Round((worldPos.z - halfOffsetZ) / gridSize) * gridSize + halfOffsetZ;
         return new Vector3(x, worldPos.y, z);
+    }
+
+    /// <summary>
+    /// 고스트 아래에 반투명 타일 발자국(Footprint) 표시.
+    /// 플레이어가 몇 칸을 차지하는지 시각적으로 확인 가능.
+    /// </summary>
+    void AddFootprintIndicator(GameObject ghost, Vector2Int size)
+    {
+        var fp = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        fp.name = "Footprint";
+        fp.transform.SetParent(ghost.transform);
+        fp.transform.localPosition = new Vector3(0f, 0.02f, 0f);
+        fp.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+        fp.transform.localScale    = new Vector3(size.x * gridSize, size.y * gridSize, 1f);
+
+        Object.Destroy(fp.GetComponent<Collider>());
+
+        var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+        mat.color = new Color(0.3f, 0.9f, 0.4f, 0.35f);
+        mat.SetFloat("_Surface", 1);           // Transparent
+        mat.SetFloat("_Blend", 0);             // Alpha
+        mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+        mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        mat.SetInt("_ZWrite", 0);
+        mat.EnableKeyword("_ALPHABLEND_ON");
+        mat.renderQueue = 3000;
+        fp.GetComponent<MeshRenderer>().material = mat;
     }
 
     void DisableGhostColliders(GameObject obj)

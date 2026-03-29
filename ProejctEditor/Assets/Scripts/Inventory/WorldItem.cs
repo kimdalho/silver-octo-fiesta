@@ -79,8 +79,6 @@ public class WorldItem : MonoBehaviour
             spriteObj.transform.localScale = new Vector3(scaleX, scaleY, 1f);
         }
 
-        spriteObj.AddComponent<Billboard>();
-
         // WorldItem 컴포넌트
         var worldItem = go.AddComponent<WorldItem>();
         worldItem.itemData = data;

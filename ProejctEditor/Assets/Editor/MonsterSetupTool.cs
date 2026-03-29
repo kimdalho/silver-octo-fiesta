@@ -92,6 +92,8 @@ public class MonsterSetupTool
             changed |= AddIfMissing<DropTable>(contents);
             changed |= AddIfMissing<MonsterAttributeState>(contents);
             changed |= AddIfMissing<HarvestSystem>(contents);
+            changed |= AddIfMissing<MonsterBehavior>(contents);
+            changed |= AddIfMissing<ReactionFeedback>(contents);
 
             if (changed)
             {
@@ -126,7 +128,7 @@ public class MonsterSetupTool
             penItem.description = "생포된 몬스터를 입주시키면 시간마다 자원을 자동 생산한다.\n[E] 몬스터 넣기 / 수거";
             penItem.itemType    = ItemType.MaterialItem;
             penItem.maxStack    = 1;
-            penItem.gridSize    = new UnityEngine.Vector2Int(2, 2);
+            penItem.gridSize    = new UnityEngine.Vector2Int(4, 2);
             penItem.placementY  = 0f;
             AssetDatabase.CreateAsset(penItem, penItemPath);
             Debug.Log("[MonsterSetup] Placeable_MonsterPen.asset 생성");
@@ -140,23 +142,9 @@ public class MonsterSetupTool
         {
             var root = new GameObject("MonsterPen");
 
-            // 시각 — 나무색 큐브
-            var visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            visual.name = "Visual";
-            visual.transform.SetParent(root.transform);
-            visual.transform.localScale    = new Vector3(1.8f, 1.2f, 1.8f);
-            visual.transform.localPosition = new Vector3(0f, 0.6f, 0f);
-            Object.DestroyImmediate(visual.GetComponent<Collider>());
-
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            mat.color = new Color(0.55f, 0.38f, 0.15f);
-            visual.GetComponent<MeshRenderer>().sharedMaterial = mat;
-
-            // 트리거 콜라이더 (상호작용 범위)
-            var col = root.AddComponent<BoxCollider>();
-            col.size   = new Vector3(3f, 2.5f, 3f);
-            col.center = new Vector3(0f, 1.25f, 0f);
-            col.isTrigger = true;
+            // gridSize → 월드 크기 자동 계산
+            int gx = penItem.gridSize.x, gz = penItem.gridSize.y;
+            BuildingPrefabFactory.Build(root, gx, gz, 1.2f, new Color(0.55f, 0.38f, 0.15f));
 
             var po  = root.AddComponent<PlacedObject>();
             po.objectType = PlacedObjectType.Pen;

@@ -142,7 +142,6 @@ public class SimpleMapGenerator : MonoBehaviour
         spriteObj.transform.SetParent(go.transform);
         spriteObj.transform.localPosition = Vector3.zero;
         var sr = spriteObj.AddComponent<SpriteRenderer>();
-        spriteObj.AddComponent<Billboard>();
 
         var tex = new Texture2D(2, 2);
         Color c;
@@ -214,6 +213,12 @@ public class SimpleMapGenerator : MonoBehaviour
 
             if (go.GetComponent<HarvestSystem>() == null)
                 go.AddComponent<HarvestSystem>();
+
+            if (go.GetComponent<MonsterBehavior>() == null)
+                go.AddComponent<MonsterBehavior>();
+
+            if (go.GetComponent<ReactionFeedback>() == null)
+                go.AddComponent<ReactionFeedback>();
         }
     }
 
@@ -231,7 +236,6 @@ public class SimpleMapGenerator : MonoBehaviour
         spriteObj.transform.SetParent(go.transform);
         spriteObj.transform.localPosition = new Vector3(0f, 1f, 0f);
         var sr = spriteObj.AddComponent<SpriteRenderer>();
-        spriteObj.AddComponent<Billboard>();
 
         var tex = new Texture2D(2, 2);
         Color c = new Color(0.7f, 0.15f, 0.15f);
