@@ -48,15 +48,22 @@ public class MonsterData : ScriptableObject
     public float moveSpeed = 2f;
 
     [Header("속성 초기값")]
-    public float initMoisture = 0f;
-    public float initHeat = 0f;
-    public float initConductivity = 0f;
+    public float initWater = 0f;
+    public float initFire = 0f;
+    public float initElectric = 0f;
 
     [Header("속성 반응 테이블 (몬스터별 고유)")]
     public AttributeReaction[] reactions;
 
     [Header("2속성 조합 테이블 (몬스터별 고유)")]
     public AttributeCombination[] combinations;
+
+    [Header("생포 (전기 속성 누적)")]
+    public CapturedMonsterData capturedItemData;  // 생포 시 인벤토리에 추가할 아이템
+    public float captureThreshold = 70f;          // Electric 값이 이 이상이면 생포
+
+    [Header("우리 생산물 (로컬 MonsterPen)")]
+    public DropTable.DropEntry[] penDrops;        // 입주 후 productionInterval마다 생산
 
     [Header("AI 행동 (간소화)")]
     public float wanderRadius = 10f;

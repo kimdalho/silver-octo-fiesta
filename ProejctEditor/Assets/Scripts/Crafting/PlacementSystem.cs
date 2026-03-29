@@ -1,30 +1,39 @@
+using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 /// <summary>
-/// 로컬씬에서 아이템을 필드에 배치하는 시스템.
-/// 인벤토리에서 PlaceableData 아이템 우클릭 → StartPlacement() 호출.
+/// 로컬 필드 건물 배치·저장·불러오기.
+///
+/// [Inspector 설정]
+/// groundLayer       : "Ground" 레이어 마스크
+/// placeableRegistry : 게임에 존재하는 모든 PlaceableData SO 등록
+/// ghostMaterial     : (선택) 반투명 배치 고스트 재질
 /// </summary>
 public class PlacementSystem : MonoBehaviour
 {
     public static PlacementSystem instance;
 
     [Header("설정")]
-    public LayerMask groundLayer;        // "Ground" 레이어 지정
-    public float gridSize = 1f;          // 그리드 스냅 단위
+    public LayerMask groundLayer;
+    public float gridSize = 1f;
+
+    [Header("배치 가능 아이템 레지스트리 (모든 PlaceableData 등록)")]
+    public PlaceableData[] placeableRegistry;
 
     [Header("고스트 재질 (선택)")]
-    public Material ghostMaterial;       // 반투명 재질. 없으면 기본 색상 유지
+    public Material ghostMaterial;
 
     private PlaceableData currentData;
     private int sourceSlotIndex;
     private GameObject ghost;
     private bool isPlacing;
 
-    // 고스트의 원래 재질 보관 (복원용)
-    private Material[] originalMaterials;
-
-    // 배치된 오브젝트를 담는 영구 컨테이너 (씬 전환 후에도 유지)
+    // 배치된 오브젝트 컨테이너 (씬 전환 후에도 유지)
     private static Transform placedObjectsContainer;
+
+    // 저장 파일 경로
+    static string SavePath => Application.persistentDataPath + "/farm.json";
 
     void Awake()
     {
@@ -36,14 +45,17 @@ public class PlacementSystem : MonoBehaviour
             var go = new GameObject("PlacedObjectsContainer");
             DontDestroyOnLoad(go);
             placedObjectsContainer = go.transform;
+            LoadFarm(); // 최초 1회만
         }
     }
+
+    // ── 배치 시작 ─────────────────────────────────────────────
 
     public void StartPlacement(PlaceableData data, int slotIndex)
     {
         if (data == null || data.placementPrefab == null)
         {
-            Debug.LogWarning($"[PlacementSystem] {data?.name}: placementPrefab이 비어 있습니다.");
+            Debug.LogWarning($"[PlacementSystem] {data?.name}: placementPrefab 없음");
             return;
         }
 
@@ -53,7 +65,6 @@ public class PlacementSystem : MonoBehaviour
         sourceSlotIndex = slotIndex;
         isPlacing = true;
 
-        // 고스트 생성
         ghost = Instantiate(data.placementPrefab);
         DisableGhostColliders(ghost);
         ApplyGhostMaterial(ghost);
@@ -65,7 +76,6 @@ public class PlacementSystem : MonoBehaviour
     {
         if (!isPlacing || ghost == null) return;
 
-        // 마우스 위치 → 바닥 레이캐스트
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hit, 200f, groundLayer))
         {
@@ -73,12 +83,10 @@ public class PlacementSystem : MonoBehaviour
             snapped.y = hit.point.y + currentData.placementY;
             ghost.transform.position = snapped;
 
-            // 좌클릭 → 배치 확정
             if (Input.GetMouseButtonDown(0))
                 ConfirmPlacement(snapped);
         }
 
-        // 우클릭 또는 ESC → 취소
         if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape))
             CancelPlacement();
     }
@@ -88,10 +96,8 @@ public class PlacementSystem : MonoBehaviour
         var inv = InventoryManager.instance.inventory;
         var slot = inv.slots[sourceSlotIndex];
 
-        // 슬롯이 아직 해당 아이템인지 검증
         if (slot == null || slot.data != currentData)
         {
-            Debug.Log("[PlacementSystem] 슬롯이 비어있거나 아이템이 달라 배치 취소");
             CancelPlacement();
             return;
         }
@@ -103,9 +109,8 @@ public class PlacementSystem : MonoBehaviour
         isPlacing = false;
         CameraFollow.instance?.SetCursorLocked(true);
 
-        GameObject placed = Instantiate(currentData.placementPrefab, position, Quaternion.identity);
-        placed.transform.SetParent(placedObjectsContainer);
-        Debug.Log($"[PlacementSystem] {currentData.itemName} 배치 완료: {position}");
+        SpawnBuilding(currentData, position, 0f);
+        SaveFarm();
 
         currentData = null;
     }
@@ -118,6 +123,90 @@ public class PlacementSystem : MonoBehaviour
         currentData = null;
         CameraFollow.instance?.SetCursorLocked(true);
     }
+
+    // ── 픽업 (PlacedObject F키 → 여기 통보) ──────────────────
+
+    public void OnObjectPickedUp(PlacedObject obj)
+    {
+        SaveFarm();
+    }
+
+    // ── 건물 스폰 (배치/로드 공통) ────────────────────────────
+
+    GameObject SpawnBuilding(PlaceableData data, Vector3 pos, float rotY)
+    {
+        var go = Instantiate(data.placementPrefab, pos, Quaternion.Euler(0f, rotY, 0f));
+        go.transform.SetParent(placedObjectsContainer);
+
+        var po = go.GetComponent<PlacedObject>();
+        if (po != null)
+        {
+            po.placeableId = data.name;
+            po.sourceData = data;
+        }
+
+        return go;
+    }
+
+    // ── 저장 ──────────────────────────────────────────────────
+
+    public void SaveFarm()
+    {
+        var save = new FarmSave();
+
+        foreach (Transform child in placedObjectsContainer)
+        {
+            var po = child.GetComponent<PlacedObject>();
+            if (po == null) continue;
+
+            save.buildings.Add(new BuildingEntry
+            {
+                id = po.placeableId,
+                x  = child.position.x,
+                y  = child.position.y,
+                z  = child.position.z,
+                ry = child.eulerAngles.y
+            });
+        }
+
+        File.WriteAllText(SavePath, JsonUtility.ToJson(save, true));
+    }
+
+    // ── 불러오기 ──────────────────────────────────────────────
+
+    void LoadFarm()
+    {
+        if (!File.Exists(SavePath)) return;
+
+        FarmSave save;
+        try { save = JsonUtility.FromJson<FarmSave>(File.ReadAllText(SavePath)); }
+        catch { return; }
+
+        if (save?.buildings == null) return;
+
+        foreach (var entry in save.buildings)
+        {
+            var data = FindData(entry.id);
+            if (data == null)
+            {
+                Debug.LogWarning($"[PlacementSystem] 레지스트리에 '{entry.id}' 없음 - 스킵");
+                continue;
+            }
+            SpawnBuilding(data, new Vector3(entry.x, entry.y, entry.z), entry.ry);
+        }
+    }
+
+    PlaceableData FindData(string id)
+    {
+        if (placeableRegistry == null) return null;
+        foreach (var d in placeableRegistry)
+            if (d != null && d.name == id) return d;
+        return null;
+    }
+
+    // ── 유틸 ──────────────────────────────────────────────────
+
+    public bool IsPlacing => isPlacing;
 
     Vector3 SnapToGrid(Vector3 worldPos)
     {
@@ -134,21 +223,15 @@ public class PlacementSystem : MonoBehaviour
 
     void ApplyGhostMaterial(GameObject obj)
     {
-        var renderers = obj.GetComponentsInChildren<Renderer>();
-
-        if (ghostMaterial != null)
+        foreach (var r in obj.GetComponentsInChildren<Renderer>())
         {
-            foreach (var r in renderers)
+            if (ghostMaterial != null)
             {
                 var mats = new Material[r.materials.Length];
                 for (int i = 0; i < mats.Length; i++) mats[i] = ghostMaterial;
                 r.materials = mats;
             }
-        }
-        else
-        {
-            // 고스트 재질 없으면 Standard 기준 반투명 처리 시도
-            foreach (var r in renderers)
+            else
             {
                 foreach (var m in r.materials)
                 {
@@ -156,9 +239,7 @@ public class PlacementSystem : MonoBehaviour
                     m.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
                     m.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
                     m.SetInt("_ZWrite", 0);
-                    m.DisableKeyword("_ALPHATEST_ON");
                     m.EnableKeyword("_ALPHABLEND_ON");
-                    m.DisableKeyword("_ALPHAPREMULTIPLY_ON");
                     m.renderQueue = 3000;
                     Color c = m.color;
                     m.color = new Color(c.r, c.g, c.b, 0.45f);
@@ -167,5 +248,18 @@ public class PlacementSystem : MonoBehaviour
         }
     }
 
-    public bool IsPlacing => isPlacing;
+    // ── 직렬화 클래스 ──────────────────────────────────────────
+
+    [System.Serializable]
+    class FarmSave
+    {
+        public List<BuildingEntry> buildings = new List<BuildingEntry>();
+    }
+
+    [System.Serializable]
+    class BuildingEntry
+    {
+        public string id;
+        public float x, y, z, ry;
+    }
 }

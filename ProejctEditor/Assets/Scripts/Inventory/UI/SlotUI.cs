@@ -115,10 +115,17 @@ public class SlotUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
         if (currentStack == null || isEquipmentSlot) return;
         if (DraggedItemUI.instance != null && DraggedItemUI.instance.IsDragging) return;
 
-        var placeable = currentStack.data as PlaceableData;
-        if (placeable == null) return;
+        // 보관함이 열려 있으면 → 입고
+        if (StorageUI.instance != null && StorageUI.instance.IsOpen)
+        {
+            StorageUI.instance.DepositSlot(slotIndex);
+            return;
+        }
 
-        PlacementSystem.instance?.StartPlacement(placeable, slotIndex);
+        // 배치 가능한 아이템이면 → 배치 모드
+        var placeable = currentStack.data as PlaceableData;
+        if (placeable != null)
+            PlacementSystem.instance?.StartPlacement(placeable, slotIndex);
     }
 
     // --- Tooltip ---

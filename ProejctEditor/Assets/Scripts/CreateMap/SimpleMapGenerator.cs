@@ -207,9 +207,13 @@ public class SimpleMapGenerator : MonoBehaviour
             go.name = $"Monster_{data.name}_{i}";
             go.transform.position = new Vector3(pos.x, 0f, pos.y);
 
-            // TODO: MonsterBehavior 구현 후 data 연결
-            // var behavior = go.GetComponent<MonsterBehavior>();
-            // if (behavior != null) behavior.data = data;
+            // 속성 상태 + 수확 시스템에 데이터 주입
+            var attrState = go.GetComponent<MonsterAttributeState>()
+                            ?? go.AddComponent<MonsterAttributeState>();
+            attrState.Init(data);
+
+            if (go.GetComponent<HarvestSystem>() == null)
+                go.AddComponent<HarvestSystem>();
         }
     }
 
@@ -237,7 +241,6 @@ public class SimpleMapGenerator : MonoBehaviour
 
         go.AddComponent<Damageable>();
         go.AddComponent<DropTable>();
-        // TODO: go.AddComponent<MonsterBehavior>();
 
         return go;
     }

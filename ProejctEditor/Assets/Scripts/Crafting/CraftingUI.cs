@@ -47,15 +47,22 @@ public class CraftingUI : MonoBehaviour
         panel.SetActive(true);
 
         if (titleText != null)
-            titleText.text = type == CraftingStationType.Hand ? "제작" : "작업대";
+            titleText.text = type switch
+            {
+                CraftingStationType.Hand      => "맨손 제작",
+                CraftingStationType.Workbench => "작업대",
+                CraftingStationType.Alchemy   => "연금대",
+                _                             => "제작"
+            };
 
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        CameraFollow.instance?.SetCursorLocked(false);
     }
 
     public void Close()
     {
         panel.SetActive(false);
+        if (PlacementSystem.instance == null || !PlacementSystem.instance.IsPlacing)
+            CameraFollow.instance?.SetCursorLocked(true);
     }
 
     void Update()

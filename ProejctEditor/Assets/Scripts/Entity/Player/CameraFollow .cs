@@ -46,14 +46,6 @@ public class CameraFollow : MonoBehaviour
     {
         if (!target) return;
 
-        // ESC로 커서 잠금 토글 (인벤토리 등 UI 조작용)
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            bool locked = Cursor.lockState == CursorLockMode.Locked;
-            Cursor.lockState = locked ? CursorLockMode.None : CursorLockMode.Locked;
-            Cursor.visible = locked;
-        }
-
         // 마우스 입력 (커서 잠김 상태에서만)
         if (Cursor.lockState == CursorLockMode.Locked)
         {

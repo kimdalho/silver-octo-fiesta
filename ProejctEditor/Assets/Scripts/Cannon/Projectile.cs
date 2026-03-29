@@ -97,8 +97,8 @@ public class Projectile : MonoBehaviour
     {
         landed = true;
 
-        // TODO: MonsterAttributeState에 속성 누적
-        // target.GetComponent<MonsterAttributeState>()?.ApplyAttribute(attribute, attributeAmount);
+        // MonsterAttributeState에 속성 누적
+        target.GetComponentInParent<MonsterAttributeState>()?.ApplyAttribute(attribute, attributeAmount);
 
         // 착탄 피드백: 스케일 펑 이펙트
         SpawnImpactEffect(hitPos);
