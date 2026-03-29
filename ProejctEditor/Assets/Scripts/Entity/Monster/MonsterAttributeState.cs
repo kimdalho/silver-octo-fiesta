@@ -3,35 +3,31 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 몬스터 런타임 속성 누적 + 반응/완성 상태 판정.
-/// 포탄 명중 시 ApplyAttribute()를 호출한다.
-/// SimpleMapGenerator 또는 MonsterBehavior가 Init()으로 데이터를 주입한다.
+/// 몬스터 런타임 속성 누적 + 반응/완성/기절 처리.
+///
+/// HP 0 → Damageable.OnKnockedOut → HandleKnockedOut():
+///   - Electric >= captureThreshold → 생포 (인벤 추가 + Destroy)
+///   - 그 외 → 지배 속성 기준 attributeDeathResults 드랍 → Destroy
 /// </summary>
 public class MonsterAttributeState : MonoBehaviour
 {
     public MonsterData data;
 
-    // 속성값 [0~100], AttributeType 인덱스로 접근
-    private float[] values = new float[6];
+    private static readonly int AttrCount = Enum.GetValues(typeof(AttributeType)).Length;
+    private float[] values;
 
-    // 이미 발동된 반응 (중복 방지)
     private HashSet<string> triggeredReactions = new HashSet<string>();
 
-    // 완성 상태 (Water 조합 수확)
     public bool IsCompleted { get; private set; }
     private int completedComboIndex = -1;
 
-    // 생포 상태 (Electric 누적)
-    public bool IsCaptured { get; private set; }
-
-    // 현재 반응 효과
-    public ReactionEffect CurrentEffect { get; private set; }
-    public float CurrentEffectValue { get; private set; }
+    public ReactionEffect CurrentEffect    { get; private set; }
+    public float          CurrentEffectValue { get; private set; }
     private float effectTimer;
 
-    // 이벤트 (ReactionFeedback 등이 구독)
-    public Action<AttributeReaction>   OnReactionTriggered;
+    public Action<AttributeReaction>    OnReactionTriggered;
     public Action<AttributeCombination> OnCompletionTriggered;
+    public Action<AttributeType, float> OnAttributeApplied;  // 속성값 적용 직후
 
     void Start()
     {
@@ -41,32 +37,113 @@ public class MonsterAttributeState : MonoBehaviour
     public void Init(MonsterData monsterData)
     {
         data = monsterData;
-        values = new float[6];
+        values = new float[AttrCount];
         values[(int)AttributeType.Water]    = data.initWater;
         values[(int)AttributeType.Fire]     = data.initFire;
         values[(int)AttributeType.Electric] = data.initElectric;
+        values[(int)AttributeType.Spore]    = data.initSpore;
 
-        // 최초 조우 등록
         CreatureCodex.instance?.RegisterEncounter(data);
+
+        // Damageable 기절 이벤트 구독
+        var dmg = GetComponent<Damageable>();
+        if (dmg != null)
+            dmg.OnKnockedOut += HandleKnockedOut;
     }
 
-    /// <summary>포탄 명중 시 Projectile이 호출.</summary>
+    void OnDestroy()
+    {
+        var dmg = GetComponent<Damageable>();
+        if (dmg != null)
+            dmg.OnKnockedOut -= HandleKnockedOut;
+    }
+
     public void ApplyAttribute(AttributeType type, float amount)
     {
+        if (values == null) return;
+
         int idx = (int)type;
         values[idx] = Mathf.Clamp(values[idx] + amount, 0f, 100f);
 
+        OnAttributeApplied?.Invoke(type, amount);
+
         CheckReactions();
         if (!IsCompleted) CheckCombinations();
-        if (!IsCaptured) CheckCapture();
     }
 
-    public float GetValue(AttributeType type) => values[(int)type];
+    public float GetValue(AttributeType type) => values != null ? values[(int)type] : 0f;
 
     public AttributeCombination GetCompletedCombination()
         => data.combinations[completedComboIndex];
 
-    // ── 반응 체크 ────────────────────────────────────────────
+    // ── 지배 속성 ─────────────────────────────────────────────
+
+    public AttributeType GetDominantAttribute()
+    {
+        if (values == null) return (AttributeType)(-1);
+
+        int   maxIdx = -1;
+        float maxVal = 0f;
+        for (int i = 0; i < values.Length; i++)
+        {
+            if (values[i] > maxVal) { maxVal = values[i]; maxIdx = i; }
+        }
+        return maxIdx >= 0 ? (AttributeType)maxIdx : (AttributeType)(-1);
+    }
+
+    // ── 기절 처리 ─────────────────────────────────────────────
+
+    void HandleKnockedOut()
+    {
+        if (data == null) { Destroy(gameObject); return; }
+
+        // 전기 임계치 → 생포 우선
+        if (data.capturedItemData != null
+            && values[(int)AttributeType.Electric] >= data.captureThreshold)
+        {
+            InventoryManager.instance?.inventory.AddItem(data.capturedItemData, 1);
+            CreatureCodex.instance?.RegisterHarvest(data, "생포");
+            Debug.Log($"[생포] {data.monsterName}");
+            Destroy(gameObject);
+            return;
+        }
+
+        // 지배 속성 기준 드랍
+        AttributeType dominant = GetDominantAttribute();
+        DropTable.DropEntry[] drops = data.defaultDeathDrops;
+
+        if (data.attributeDeathResults != null)
+        {
+            foreach (var result in data.attributeDeathResults)
+            {
+                if (result.dominantAttribute == dominant)
+                {
+                    drops = result.drops;
+                    break;
+                }
+            }
+        }
+
+        SpawnDrops(drops);
+        CreatureCodex.instance?.RegisterHarvest(data, dominant.ToString());
+        Destroy(gameObject);
+    }
+
+    void SpawnDrops(DropTable.DropEntry[] drops)
+    {
+        if (drops == null) return;
+        foreach (var drop in drops)
+        {
+            if (drop.item == null) continue;
+            if (UnityEngine.Random.value > drop.chance) continue;
+            Vector3 scatter = new Vector3(
+                UnityEngine.Random.Range(-0.6f, 0.6f), 0f,
+                UnityEngine.Random.Range(-0.6f, 0.6f));
+            WorldItem.Spawn(drop.item, transform.position + Vector3.up + scatter, drop.count);
+        }
+    }
+
+    // ── 반응 체크 ─────────────────────────────────────────────
 
     void CheckReactions()
     {
@@ -83,8 +160,6 @@ public class MonsterAttributeState : MonoBehaviour
             OnReactionTriggered?.Invoke(r);
         }
     }
-
-    // ── 완성 상태 체크 ────────────────────────────────────────
 
     void CheckCombinations()
     {
@@ -103,37 +178,13 @@ public class MonsterAttributeState : MonoBehaviour
         }
     }
 
-    // ── 생포 체크 (Electric) ──────────────────────────────────
-
-    void CheckCapture()
-    {
-        if (data == null || data.capturedItemData == null) return;
-        if (values[(int)AttributeType.Electric] < data.captureThreshold) return;
-
-        IsCaptured = true;
-
-        var inv = InventoryManager.instance?.inventory;
-        inv?.AddItem(data.capturedItemData, 1);
-
-        CreatureCodex.instance?.RegisterHarvest(data, "생포");
-        Debug.Log($"[생포] {data.monsterName} → 인벤토리");
-
-        InteractHintUI.instance?.Hide();
-        Destroy(gameObject);
-    }
-
-    // ── 반응 효과 적용 ────────────────────────────────────────
-
     void ApplyEffect(ReactionEffect effect, float value)
     {
-        CurrentEffect = effect;
+        CurrentEffect      = effect;
         CurrentEffectValue = value;
 
-        // Stun/Paralyze는 duration 타이머
         if (effect == ReactionEffect.Stun || effect == ReactionEffect.Paralyze)
             effectTimer = value;
-
-        // MonsterBehavior는 CurrentEffect를 매 프레임 폴링 → 별도 호출 불필요
     }
 
     void Update()

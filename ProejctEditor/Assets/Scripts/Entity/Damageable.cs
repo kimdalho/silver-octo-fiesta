@@ -2,12 +2,20 @@ using System;
 using System.Collections;
 using UnityEngine;
 
+/// <summary>
+/// HP 관리 컴포넌트.
+/// 몬스터: HP 0 → OnKnockedOut 이벤트 → MonsterAttributeState가 드랍·파괴 처리.
+/// 비몬스터: HP 0 → DropTable 호출 → Destroy (기존 방식).
+/// </summary>
 public class Damageable : MonoBehaviour
 {
     public float maxHP = 50f;
     public float currentHP;
 
-    public event Action OnDied;
+    public bool IsKnockedOut { get; private set; }
+
+    public event Action OnKnockedOut; // 몬스터용 — MonsterAttributeState가 구독
+    public event Action OnDied;       // 비몬스터용 (호환성 유지)
 
     private Renderer cachedRenderer;
     private Color originalColor;
@@ -15,25 +23,24 @@ public class Damageable : MonoBehaviour
     void Awake()
     {
         currentHP = maxHP;
-        cachedRenderer = GetComponent<Renderer>();
+        cachedRenderer = GetComponentInChildren<Renderer>();
         if (cachedRenderer != null)
             originalColor = cachedRenderer.material.color;
     }
 
     public void TakeDamage(float amount)
     {
-        if (currentHP <= 0f) return;
+        if (IsKnockedOut) return;
 
         currentHP -= amount;
 
-        // 피격 플래시
         if (cachedRenderer != null)
             StartCoroutine(FlashRed());
 
         if (currentHP <= 0f)
         {
             currentHP = 0f;
-            Die();
+            KnockOut();
         }
     }
 
@@ -45,13 +52,20 @@ public class Damageable : MonoBehaviour
             cachedRenderer.material.color = originalColor;
     }
 
-    void Die()
+    void KnockOut()
     {
-        var dropTable = GetComponent<DropTable>();
-        if (dropTable != null)
-            dropTable.SpawnDrops(transform.position);
+        IsKnockedOut = true;
+        OnKnockedOut?.Invoke();
 
-        OnDied?.Invoke();
-        Destroy(gameObject);
+        // MonsterAttributeState가 없는 오브젝트는 기존 방식으로 처리
+        if (GetComponent<MonsterAttributeState>() == null)
+        {
+            var dropTable = GetComponent<DropTable>();
+            if (dropTable != null)
+                dropTable.SpawnDrops(transform.position);
+
+            OnDied?.Invoke();
+            Destroy(gameObject);
+        }
     }
 }

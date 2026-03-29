@@ -6,12 +6,13 @@
 public enum AttributeType
 {
     // 직접 입력 (포탄)
-    Water,      // 습기
-    Fire,       // 열
-    Electric,   // 전도
+    Water     = 0,  // 습기
+    Fire      = 1,  // 열
+    Electric  = 2,  // 전도
+    Spore     = 3,  // 포자
 
     // 파생 (2속성 조합)
-    Growth,     // 생장 (물+전기)
-    Structure,  // 구조 (불+전기)
-    Decay       // 부패 (물+불)
+    Growth    = 4,  // 생장
+    Structure = 5,  // 구조
+    Decay     = 6   // 부패
 }
