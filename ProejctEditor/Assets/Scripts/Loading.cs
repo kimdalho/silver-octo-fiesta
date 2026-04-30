@@ -1,13 +1,11 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class Loading : MonoBehaviour
 {
-
-    private void Start()
+    void Start()
     {
-        var sceneName = GameLoopManager.instance.targetScene;
-        GameLoopManager.instance.targetScene = string.Empty;
+        string sceneName = DungeonGameManager.instance.PendingScene;
         SceneManager.LoadScene(sceneName);
     }
 }
