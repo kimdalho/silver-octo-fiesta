@@ -102,9 +102,7 @@ public class CannonController : MonoBehaviour
         // 장전 중이면 불가
         if (isReloading) return false;
 
-        // ShoulderView (배틀씬)에서만
-        if (CameraFollow.instance == null || CameraFollow.instance.mode != CameraMode.ShoulderView)
-            return false;
+        if (CameraFollow.instance == null) return false;
 
         // 커서 잠긴 상태에서만
         if (Cursor.lockState != CursorLockMode.Locked) return false;

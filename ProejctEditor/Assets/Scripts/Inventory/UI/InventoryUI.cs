@@ -57,8 +57,7 @@ public class InventoryUI : MonoBehaviour
         }
         else
         {
-            // ShoulderView면 커서 다시 잠금
-            if (CameraFollow.instance != null && CameraFollow.instance.mode == CameraMode.ShoulderView)
+            if (CameraFollow.instance != null)
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
