@@ -138,13 +138,11 @@ public static class NaturePrefabCreator
             col.height = spriteH;
         }
 
-        // 자식 Sprite = 빌보드 회전
         var spriteObj = new GameObject("Sprite");
         spriteObj.transform.SetParent(go.transform);
         spriteObj.transform.localPosition = Vector3.zero;
         var sr = spriteObj.AddComponent<SpriteRenderer>();
         sr.sprite = sprite;
-        spriteObj.AddComponent<Billboard>();
 
         string prefabPath = $"{folder}/{name}.prefab";
         PrefabUtility.SaveAsPrefabAsset(go, prefabPath);
