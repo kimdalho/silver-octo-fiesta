@@ -32,8 +32,11 @@ public class DungeonViewController : MonoBehaviour
         RefreshFloor();
         stateText.text = state.ToString();
 
-        bool isExplore = state == DungeonState.Explore;
-        actionButtons.SetActive(isExplore);
+        bool showActions = state != DungeonState.Battle
+                        && state != DungeonState.Boss
+                        && state != DungeonState.Dead
+                        && state != DungeonState.Town;
+        actionButtons.SetActive(showActions);
         battlePanel.SetActive(state == DungeonState.Battle);
         bossPanel.SetActive(state == DungeonState.Boss);
 
