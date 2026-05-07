@@ -10,6 +10,14 @@ public static class DungeonLunchSceneBuilder
 {
     private const string SCENE_ROOT = "Assets/Scenes/DL/";
 
+    private static TMP_FontAsset s_font;
+    private static TMP_FontAsset GetFont()
+    {
+        if (s_font == null)
+            s_font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/TextMesh Pro/Fonts/Maplestory Light SDF.asset");
+        return s_font;
+    }
+
     private static void RegisterScenes()
     {
         var scenes = new[]
@@ -219,7 +227,7 @@ public static class DungeonLunchSceneBuilder
         var logTxtGO = new GameObject("LogText");
         logTxtGO.transform.SetParent(contentGO.transform, false);
         var logTmp = logTxtGO.AddComponent<TextMeshProUGUI>();
-        logTmp.fontSize = 16; logTmp.color = Color.white; logTmp.enableWordWrapping = true;
+        logTmp.font = GetFont(); logTmp.fontSize = 16; logTmp.color = Color.white; logTmp.enableWordWrapping = true;
         SetStretch(logTxtGO.GetComponent<RectTransform>());
         sr.viewport = vpGO.GetComponent<RectTransform>();
         sr.content  = contentRect;
@@ -251,7 +259,7 @@ public static class DungeonLunchSceneBuilder
             var expryGO = new GameObject("ExpiryText");
             expryGO.transform.SetParent(slotGO.transform, false);
             var expryTmp = expryGO.AddComponent<TextMeshProUGUI>();
-            expryTmp.fontSize = 10; expryTmp.alignment = TextAlignmentOptions.Center; expryTmp.color = Color.white;
+            expryTmp.font = GetFont(); expryTmp.fontSize = 10; expryTmp.alignment = TextAlignmentOptions.Center; expryTmp.color = Color.white;
             var expryRect = expryGO.GetComponent<RectTransform>();
             expryRect.anchorMin = new Vector2(0, 0); expryRect.anchorMax = new Vector2(1, 0);
             expryRect.pivot = new Vector2(0.5f, 0f);
@@ -493,6 +501,7 @@ public static class DungeonLunchSceneBuilder
         var go = new GameObject(name);
         go.transform.SetParent(parent.transform, false);
         var tmp = go.AddComponent<TextMeshProUGUI>();
+        tmp.font = GetFont();
         tmp.text = text;
         tmp.fontSize = fontSize;
         tmp.alignment = TextAlignmentOptions.Center;
@@ -516,6 +525,7 @@ public static class DungeonLunchSceneBuilder
         var textGO = new GameObject("Text");
         textGO.transform.SetParent(go.transform, false);
         var tmp = textGO.AddComponent<TextMeshProUGUI>();
+        tmp.font = GetFont();
         tmp.text = label;
         tmp.fontSize = 24;
         tmp.alignment = TextAlignmentOptions.Center;
